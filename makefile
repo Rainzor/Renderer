@@ -8,13 +8,15 @@ OBJECTS = $(SOURCES:.cpp=.o)
 EXECUTABLE = inOneWeekend
 
 all: $(SOURCES) $(EXECUTABLE)
+	
 #$@默认是语句的目标，比如这个是$(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LFLAGS) $(OBJECTS) -o $@
+
 #$<是规则的依赖项中的第一个文件，即源文件的名称main.cpp
 #.cpp.o是一个后缀规则，它指定了将.cpp源文件编译为.o目标文件的方式
 .cpp.o: 
 	$(CC) $(CFLAGS) $< -o $@ 
 
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
+	del $(OBJECTS) $(EXECUTABLE)

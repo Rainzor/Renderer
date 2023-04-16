@@ -4,7 +4,7 @@
 #include "ray.h"
 
 
-bool hit_sphere(const pointf3& center, float radius, const ray& r);
+double hit_sphere(const pointf3& center, float radius, const ray& r);
 
 rgbf ray_color(const ray& r);
 
@@ -45,21 +45,27 @@ int main() {
     std::cerr << "\nDone.\n";
 }
 
-bool hit_sphere(const pointf3& center, float radius, const ray& r) {
+double hit_sphere(const pointf3& center, float radius, const ray& r) {
     vecf3 oc = r.origin() - center;//A-C
     auto a = dot(r.direction(), r.direction());//b*b
     auto b = 2.0 * dot(oc, r.direction());//2*b*(A-C)
     auto c = dot(oc, oc) - radius * radius;//(A-C)*(A-C)-r*r
     auto discriminant = b * b - 4 * a * c;//delta
-    return (discriminant > 0);
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0 * a);//取方程中靠近相机的交点
+    }
 }
 
 rgbf ray_color(const ray&r){
-    // 按照y值的大小线性插值混合颜色
-    if (hit_sphere(pointf3(0, 0, -1), 0.5, r))//球心，半径，光线
-        return rgbf(1, 0, 0);//红色
+    auto t = hit_sphere(pointf3(0, 0, -1), 0.5, r);  // 球心，半径，光线
+    if (t > 0.0) {
+        vecf3 N = unit_vector(r.at(t) - vecf3(0, 0, -1));//球心，交点
+        return 0.5 * rgbf(N.x() + 1, N.y() + 1, N.z() + 1);//归一化
+    }
     // 背景颜色
     vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
-    auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
+    t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
     return (1.0 - t) * rgbf(1.0, 1.0, 1.0) + t * rgbf(0.5, 0.7, 1.0);
 }

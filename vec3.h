@@ -27,6 +27,13 @@ class vec3 {
             return *this;
         }
 
+        vec3& operator-=(const vec3 &v) {
+            e[0] -= v.e[0];
+            e[1] -= v.e[1];
+            e[2] -= v.e[2];
+            return *this;
+        }
+
         vec3& operator*=(const T t) {
             e[0] *= t;
             e[1] *= t;
@@ -71,24 +78,25 @@ inline vec3<T> operator*(const vec3<T> &u, const vec3<T> &v) {
     return vec3<T>(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
 }
 
+
 template <typename T>
 inline vec3<T> operator*(T t, const vec3<T> &v) {
-    return vec3<T>(static_cast<T>(t) * v.e[0], static_cast<T>(t) * v.e[1], static_cast<T>(t) * v.e[2]);
-}
-
-template <typename T,typename U>
-inline vec3<T> operator*(const vec3<T> &v, U t) {
-    return vec3<T>(static_cast<T>(t) * v.e[0], static_cast<T>(t) * v.e[1], static_cast<T>(t) * v.e[2]);
+    return vec3<T>(t*v.e[0], t*v.e[1], t*v.e[2]);
 }
 
 template <typename T>
 inline vec3<T> operator*(const vec3<T> &v, T t) {
-    return t * v;
+    return vec3<T>(t*v.e[0], t*v.e[1], t*v.e[2]);
 }
 
 template <typename T, typename U>
 inline vec3<T> operator*(U t, const vec3<T>& v) {
-    return static_cast<T>(t) * v;
+    return v * static_cast<T>(t);
+}
+
+template <typename T, typename U>
+inline vec3<T> operator*(const vec3<T>& v, U t) {
+    return vec3<T>(static_cast<T>(t) * v.e[0], static_cast<T>(t) * v.e[1], static_cast<T>(t) * v.e[2]);
 }
 
 template <typename T>
@@ -98,7 +106,7 @@ inline vec3<T> operator/(vec3<T> v, T t) {
 
 template <typename T, typename U>
 inline vec3<T> operator/(vec3<T> v, U t) {
-    return static_cast<T>(1/t) * v;
+    return static_cast<T>(1.0 / t) * v;
 }
 
 template <typename T>

@@ -53,6 +53,19 @@ class vec3 {
             return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
         }
 
+        inline static vec3 random() {
+            T x = static_cast<T>(random_double());
+            T y = static_cast<T>(random_double());
+            T z = static_cast<T>(random_double());
+            return vec3(x, y, z);
+        }
+        inline static vec3 random(T min, T max) {
+            T x = static_cast<T>(random_double(min, max));
+            T y = static_cast<T>(random_double(min, max));
+            T z = static_cast<T>(random_double(min, max));
+            return vec3(x, y, z);
+        }
+
     public:
         T e[3];
 };
@@ -128,6 +141,15 @@ inline vec3<T> unit_vector(vec3<T> v) {
     return v / v.length();
 }
 
+// 特化版本
+//  针对 int 类型的特化版本
+// template <>
+// inline vec3<int> vec3<int>::random() {
+//     int x = random_double()>0.5?1:0;
+//     int y = random_double()>0.5?1:0;
+//     int z = random_double()>0.5?1:0;
+//     return vec3<int>(x, y, z);
+// }
 
 // Type aliases for vec3
 template <typename T>
@@ -138,7 +160,46 @@ using color = vec3<T>;    // RGB color
 using vecf3 = vec3<float>; // float type
 using pointf3 = point3<float>;
 using rgbf = color<float>;
+using vecd3 = vec3<double>; // double type
+using pointd3 = point3<double>;
+vecf3 random_in_unit_sphere() {
+    while (true) {
+        float u = random_double();
+        float v = random_double();
+        float r2 = u * u + v * v;
+        if (r2 >= 1)
+            continue;
+        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), 1-2*r2);
+    }
+}
+vecf3 random_in_unit_hemisphere() {
+    while (true) {
+        float u = random_double();
+        float v = random_double();
+        float r2 = u * u + v * v;
+        if (r2 >= 1)
+            continue;
+        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), abs(1-2*r2));
+    }
+}
+vecf3 random_in_unit_hemisphere(const vecf3& normal) {
+    //构造在normal方向上的半球面上的随机向量
 
+    // 1. 构造正交基，并将随机向量转换到世界坐标系下
+    vecf3 local_up = abs(normal.y()) < 0.999 ? vecf3(0, 1, 0) : vecf3(1, 0, 0);
+    vecf3 local_w = unit_vector(normal);
+    vecf3 local_u = unit_vector(cross(local_w, local_up));
+    vecf3 local_v = cross(local_w, local_u);
+    vecf3 local_p = random_in_unit_hemisphere();
 
+    // 将随机向量从局部坐标系转换到世界坐标系
+    vecf3 world_p = local_p.x() * local_u + local_p.y() * local_v + local_p.z() * local_w;
 
+    // 2. 将随机向量旋转到 normal 的方向
+    if (dot(world_p, normal) < 0.0) {
+        world_p = -world_p;
+    }
+
+    return world_p;
+}
 #endif // VEC3_H

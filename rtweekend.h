@@ -2,10 +2,10 @@
 #define RTWEEKEND_H
 
 #include <cmath>
-#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <random>
+#include <cmath>
 //添加一些常用的变量、常数、函数和头文件
 
 // Usings
@@ -13,7 +13,7 @@
 using std::make_shared;
 using std::shared_ptr;
 using std::sqrt;
-
+using std::abs;
 // Constants
 
 const double infinity = std::numeric_limits<double>::infinity();

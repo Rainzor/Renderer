@@ -7,7 +7,7 @@
 #include <iostream>
 
 rgbf ray_color(const ray& r, const hittable& world);
-
+rgbf ray_color(const ray&r, const hittable&world, int depth);
 int main() {
 
     // Image
@@ -15,7 +15,7 @@ int main() {
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int sample_per_pixel = 100;
-
+    const int max_depth = 50;
     // World
     hittable_list world;
     world.add(make_shared<sphere>(pointf3(0, 0, -1), 0.5)); //通过make_shared创建共享指针
@@ -48,8 +48,14 @@ int main() {
 
 rgbf ray_color(const ray&r, const hittable& world) {
     struct hit_record rec;
-    if(world.hit(r, 0, infinity, rec)) {//在0-infinity范围内找最近邻的表面
-        return 0.5 * (rec.normal + rgbf(1, 1, 1));
+    float p_RR=0.8;//概率反射系数
+    if(world.hit(r, 0.0001, infinity, rec)) {//在0-infinity范围内找最近邻的表面
+        pointf3 direc = random_in_unit_hemisphere(rec.normal);
+        if(random_double()<p_RR)
+            //0.5 是吸收系数
+            return 0.5 * ray_color(ray(rec.p, direc), world) / p_RR;  // 光线递归
+        else
+            return rgbf(0,0,0);
     }
     // 背景颜色
     vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
@@ -57,3 +63,17 @@ rgbf ray_color(const ray&r, const hittable& world) {
     return (1.0 - t) * rgbf(1.0, 1.0, 1.0) + t * rgbf(0.5, 0.7, 1.0);
 }
 
+
+rgbf ray_color(const ray&r, const hittable&world, int depth){
+    struct hit_record rec;
+    if(depth<=0)
+        return rgbf(0,0,0);
+    if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
+        pointf3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth-1);//光线递归
+    }
+    // 背景颜色
+    vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
+    auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
+    return (1.0 - t) * rgbf(1.0, 1.0, 1.0) + t * rgbf(0.5, 0.7, 1.0);
+}

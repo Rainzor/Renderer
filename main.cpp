@@ -38,7 +38,7 @@ int main() {
                 auto v = (j + random_double()) / (image_height - 1);
                 ray r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, world);
-            } 
+            }
             write_color(std::cout,pixel_color,sample_per_pixel);
         }
     }
@@ -46,11 +46,13 @@ int main() {
     std::cerr << "\nDone.\n";
 }
 
+
+
 rgbf ray_color(const ray&r, const hittable& world) {
     struct hit_record rec;
     float p_RR=0.8;//概率反射系数
     if(world.hit(r, 0.0001, infinity, rec)) {//在0-infinity范围内找最近邻的表面
-        pointf3 direc = random_in_unit_hemisphere(rec.normal);
+        pointf3 direc = random_in_unit_sphere() + rec.normal;
         if(random_double()<p_RR)
             //0.5 是吸收系数
             return 0.5 * ray_color(ray(rec.p, direc), world) / p_RR;  // 光线递归
@@ -69,8 +71,8 @@ rgbf ray_color(const ray&r, const hittable&world, int depth){
     if(depth<=0)
         return rgbf(0,0,0);
     if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
-        pointf3 target = rec.p + rec.normal + random_in_unit_sphere();
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth-1);//光线递归
+        pointf3 target = rec.p + random_in_unit_hemisphere(rec.normal);
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);  // 光线递归
     }
     // 背景颜色
     vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量

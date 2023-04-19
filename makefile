@@ -6,7 +6,7 @@ CFLAGS = -c
 SOURCES = main.cpp
 #如果SOURCES包含main.cpp和vec3.cpp，则$(SOURCES:.cpp=.o)将生成main.o和vec3.o
 OBJECTS = $(SOURCES:.cpp=.o)
-EXECUTABLE = inOneWeekend
+EXECUTABLE = main
 
 all: $(SOURCES) $(EXECUTABLE)
 	

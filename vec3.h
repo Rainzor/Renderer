@@ -229,5 +229,11 @@ vecf3 random_on_unit_hemisphere(const vecf3& normal) {
 vecf3 reflect(const vecf3& v, const vecf3& n) {//反射
     return v - 2 * dot(v, n) * n;
 }
-
+vecf3 refract(const vecf3& uv, const vecf3& n, float etai_over_etat) {//折射
+    //折射
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vecf3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    vecf3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
+}
 #endif // VEC3_H

@@ -4,6 +4,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "camera.h"
+#include "material.h"
 #include <iostream>
 
 rgbf ray_color(const ray& r, const hittable& world);
@@ -18,9 +19,17 @@ int main() {
     const int max_depth = 50;
     // World
     hittable_list world;
-    world.add(make_shared<sphere>(pointf3(0, 0, -1), 0.5)); //通过make_shared创建共享指针
-    world.add(make_shared<sphere>(pointf3(0, -100.5, -1), 100));
+    //注册材质
+    auto material_ground = make_shared<lambertian>(rgbf(0.8, 0.8, 0.0));
+    auto material_center = make_shared<lambertian>(rgbf(0.7, 0.3, 0.3));
+    auto material_left = make_shared<metal>(rgbf(0.8, 0.8, 0.8), 0.01);
+    auto material_right = make_shared<metal>(rgbf(0.8, 0.6, 0.2), 0.3);
 
+    //添加物体
+    world.add(make_shared<sphere>(pointf3(0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<sphere>(pointf3(0.0, 0.0, -1.0), 0.5, material_center));
+    world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), 0.5, material_left));
+    world.add(make_shared<sphere>(pointf3(1.0, 0.0, -1.0), 0.5, material_right));
 
     // Camera
     camera cam;
@@ -32,14 +41,14 @@ int main() {
     for (int j = image_height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i) {
-            rgbf pixel_color(0,0,0);
+            rgbf pixel_rgbf(0,0,0);
             for(int s=0; s<sample_per_pixel;++s){
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
                 ray r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, world);
+                pixel_rgbf += ray_color(r, world);
             }
-            write_color(std::cout,pixel_color,sample_per_pixel);
+            write_color(std::cout,pixel_rgbf,sample_per_pixel);
         }
     }
 
@@ -50,12 +59,13 @@ int main() {
 
 rgbf ray_color(const ray&r, const hittable& world) {
     struct hit_record rec;
-    float p_RR=0.8;//概率反射系数
+    float p_RR=0.95;//概率反射系数
     if(world.hit(r, 0.0001, infinity, rec)) {//在0-infinity范围内找最近邻的表面
-        pointf3 direc = random_in_unit_sphere() + rec.normal;
-        if(random_double()<p_RR)
-            //0.5 是吸收系数
-            return 0.5 * ray_color(ray(rec.p, direc), world) / p_RR;  // 光线递归
+        ray scattered;
+        rgbf attenuation;
+        if (random_double() < p_RR && (rec.mat_ptr->scatter(r, rec, attenuation, scattered)))
+            // attenuation 是吸收系数,反应处颜色的变化
+            return attenuation * ray_color(scattered, world) / p_RR;  // 光线递归
         else
             return rgbf(0,0,0);
     }
@@ -71,8 +81,11 @@ rgbf ray_color(const ray&r, const hittable&world, int depth){
     if(depth<=0)
         return rgbf(0,0,0);
     if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
-        pointf3 target = rec.p + random_in_unit_hemisphere(rec.normal);
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);  // 光线递归
+        ray scattered;
+        rgbf attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))//这里用上了指针的相互引用
+            return attenuation * ray_color(scattered, world, depth - 1);
+        return rgbf(0, 0, 0);
     }
     // 背景颜色
     vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量

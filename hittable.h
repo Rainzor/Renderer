@@ -1,12 +1,13 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
-#include "ray.h"
-
+#include "rtweekend.h"
+class material;  // alert the compiler that the pointer is to a class
 struct hit_record {
     pointf3 p;
     vecf3 normal;
     double t;
     bool front_face;
+    shared_ptr<material> mat_ptr;
 
     inline void set_face_normal(const ray& r, const vecf3& outward_normal) {
         front_face = dot(r.direction(), outward_normal) < 0;

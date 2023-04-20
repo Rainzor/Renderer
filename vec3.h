@@ -65,6 +65,11 @@ class vec3 {
             T z = static_cast<T>(random_double(min, max));
             return vec3(x, y, z);
         }
+        bool near_zero() const {
+            // Return true if the vector is close to zero in all dimensions.
+            const auto s = 1e-8;
+            return (abs(e[0]) < s) && (abs(e[1]) < s) && (abs(e[2]) < s);
+        }
 
     public:
         T e[3];
@@ -187,7 +192,9 @@ vecf3 random_on_unit_sphere() {
         return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), 1-2*r2);
     }
 }
-
+vecf3 random_unit_vector(){
+    return random_on_unit_sphere();
+}
 vecf3 random_on_unit_hemisphere() {
     while (true) {
         float u = random_double();
@@ -218,4 +225,9 @@ vecf3 random_on_unit_hemisphere(const vecf3& normal) {
 
     return world_p;
 }
+
+vecf3 reflect(const vecf3& v, const vecf3& n) {//反射
+    return v - 2 * dot(v, n) * n;
+}
+
 #endif // VEC3_H

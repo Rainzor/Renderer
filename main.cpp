@@ -32,10 +32,15 @@ int main() {
     world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), -0.45, material_left));
     world.add(make_shared<sphere>(pointf3(1.0, 0.0, -1.0), 0.5, material_right));
 
+
     // Camera
-    camera cam(pointf3(-2,2,1),pointf3(0,0,-1),vecf3(0,1,0),90, aspect_ratio);//相机位于z=-2平面上
- 
-    // Render
+    pointf3 lookfrom(3, 3, 2);
+    pointf3 lookat(0, 0, -1);
+    vecf3 vup(0, 1, 0);
+    auto dist_to_focus = (lookfrom - lookat).length();
+    auto aperture = 2.0;
+
+    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 

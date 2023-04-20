@@ -194,6 +194,16 @@ vecf3 random_on_unit_sphere() {
 vecf3 random_unit_vector(){
     return random_on_unit_sphere();
 }
+
+vecf3 random_in_unit_disk() {
+    while (true) {
+        auto p = vecf3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() >= 1)
+            continue;
+        return p;
+    }
+}
+
 vecf3 random_on_unit_hemisphere() {
     while (true) {
         float u = random_double();

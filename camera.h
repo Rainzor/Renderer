@@ -5,25 +5,29 @@
 
 class camera{
     public:
-        camera(
-            double vfov,//垂直视角
-            double aspect_ratio
-        ){
+     camera(
+         pointf3 lookfrom,
+         pointf3 lookat,
+         vecf3 vup,    // 垂直向量,view up：the rotation around the lookat-lookfrom axis.
+         double vfov,  // 垂直视角
+         double aspect_ratio) {
             auto theta = degrees_to_radians(vfov);
             auto h = tan(theta / 2);
             auto viewport_height = 2.0 * h;
             auto viewport_width = aspect_ratio * viewport_height;
-            
-            auto focal_length = 1.0;
 
-            origin = pointf3(0,0,0);
-            horizontal = vecf3(viewport_width,0.0,0.0);
-            vertical = vecf3(0.0, viewport_height, 0.0);
-            lower_left_corner = origin - horizontal / 2 - vertical / 2 - vecf3(0, 0, focal_length);
+            auto w = unit_vector(lookfrom - lookat);
+            auto u = unit_vector(cross(vup, w));
+            auto v = cross(w, u);
+
+            origin = lookfrom;
+            horizontal = viewport_width * u;
+            vertical = viewport_height * v;
+            lower_left_corner = origin - horizontal / 2 - vertical / 2 - w;
         }
 
-        ray get_ray(double u, double v)const{
-            return ray(origin, lower_left_corner + u * horizontal + v * vertical - origin);
+        ray get_ray(double s, double t)const{
+            return ray(origin, lower_left_corner + s* horizontal + t * vertical - origin);
         }
     private:
         pointf3 origin;

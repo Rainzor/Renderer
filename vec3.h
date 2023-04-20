@@ -159,12 +159,11 @@ inline vec3<T> unit_vector(vec3<T> v) {
 // Type aliases for vec3
 template <typename T>
 using point3 = vec3<T>;   // 3D point
-template <typename T>
-using color = vec3<T>;    // RGB color
 
 using vecf3 = vec3<float>; // float type
 using pointf3 = point3<float>;
-using rgbf = color<float>;
+using color = vecf3;  // RGB color
+using rgbf = color;
 using vecd3 = vec3<double>; // double type
 using pointd3 = point3<double>;
 vecf3 random_in_unit_sphere() {

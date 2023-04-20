@@ -5,16 +5,14 @@
 
 #include <iostream>
 
-template<typename T>
-void write_color(std::ostream &out, color<T> pixel_color) {
+void write_color(std::ostream &out, color pixel_color) {
     // Write the translated [0,255] value of each color component.
     out << static_cast<int>(255.999 * pixel_color.x()) << ' '
         << static_cast<int>(255.999 * pixel_color.y()) << ' '
         << static_cast<int>(255.999 * pixel_color.z()) << '\n';
 }
 
-template <typename T>
-void write_color(std::ostream& out, color<T> pixel_color, int samples_per_pixel) {
+void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();

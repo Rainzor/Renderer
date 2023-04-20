@@ -18,21 +18,22 @@ int main() {
     const int sample_per_pixel = 100;
     const int max_depth = 50;
     // World
+    auto R = cos(pi / 4);
     hittable_list world;
-    //注册材质
-    auto material_ground = make_shared<lambertian>(rgbf(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(rgbf(0.1, 0.2, 0.5));
+
+    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     auto material_left = make_shared<dielectric>(1.5);
-    auto material_right = make_shared<metal>(rgbf(0.8, 0.6, 0.2), 0.0);
-    //添加物体
+    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);
+
     world.add(make_shared<sphere>(pointf3(0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(pointf3(0.0, 0.0, -1.0), 0.5, material_center));
-    world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), 0.5, material_left));//双层玻璃
-    world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), -0.4, material_left));//半径为负数，表示内部玻璃，法向量指向内部
+    world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), 0.5, material_left));
+    world.add(make_shared<sphere>(pointf3(-1.0, 0.0, -1.0), -0.45, material_left));
     world.add(make_shared<sphere>(pointf3(1.0, 0.0, -1.0), 0.5, material_right));
 
     // Camera
-    camera cam(90, aspect_ratio);
+    camera cam(pointf3(-2,2,1),pointf3(0,0,-1),vecf3(0,1,0),90, aspect_ratio);//相机位于z=-2平面上
  
     // Render
 

@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/CG/Rendering/inOneWeekend",
-      "program": "d:/CG/Rendering/inOneWeekend/build/Debug/outDebug",
+      "cwd": "d:/CG/Rendering/inOneWeek",
+      "program": "d:/CG/Rendering/inOneWeek/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

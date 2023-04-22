@@ -1,6 +1,7 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 #include "rtweekend.h"
+#include "aabb.h"
 class material;  // alert the compiler that the pointer is to a class
 struct hit_record {
     pointf3 p;
@@ -21,7 +22,9 @@ class hittable {
    //给定一条光线，判断是否与物体相交，若相交，将修改hit_record
    //t_min和t_max是光线的参数范围，只判断在这个范围内的交点
     virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
-
+    
+    //返回物体的包围盒 output_box. bool值表示是否有包围盒 比如无限大平面就没有
+    virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
 };
 
 #endif

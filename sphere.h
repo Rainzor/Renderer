@@ -11,7 +11,7 @@ class sphere : public hittable {
             : center(cen), radius(r),mat_ptr(m){};
 
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
-
+        virtual bool bounding_box(double time0, double time1, aabb& output_box) const override;
     public:
         pointf3 center;//球心
         float radius;//半径
@@ -41,6 +41,14 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)const
     vecf3 outward_normal = (rec.p-center)/radius;
     rec.set_face_normal(r,outward_normal);
     rec.mat_ptr = mat_ptr;//返回材料性质
+    return true;
+}
+
+bool sphere::bounding_box(double time0, double time1, aabb& output_box) const {
+    output_box = aabb(
+        center - vecf3(radius, radius, radius),
+        center + vecf3(radius, radius, radius)
+    );
     return true;
 }
 

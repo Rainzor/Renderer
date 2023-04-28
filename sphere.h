@@ -29,6 +29,7 @@ class sphere : public hittable {
          auto theta = acos(-p.y());
          auto phi = atan2(-p.z(), p.x()) + pi;
 
+         //用极坐标作为纹理坐标   
          u = phi / (2 * pi);
          v = theta / pi;
      }

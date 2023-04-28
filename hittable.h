@@ -4,11 +4,12 @@
 #include "aabb.h"
 class material;  // alert the compiler that the pointer is to a class
 struct hit_record {
-    pointf3 p;
-    vecf3 normal;
-    double t;
-    bool front_face;
-    shared_ptr<material> mat_ptr;
+    pointf3 p;//交点世界坐标
+    vecf3 normal;//法向量
+    double t;//光线参数
+    double u,v;//纹理坐标
+    bool front_face;//是否正面朝向
+    shared_ptr<material> mat_ptr;//交点材质
 
     inline void set_face_normal(const ray& r, const vecf3& outward_normal) {
         front_face = dot(r.direction(), outward_normal) < 0;

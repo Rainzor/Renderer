@@ -3,6 +3,7 @@
 
 #include "rtweekend.h"
 #include "hittable.h"
+#include "texture.h"
 
 class material {
    public:
@@ -16,7 +17,9 @@ class material {
 
 class lambertian:public material{
     public:
-        lambertian(const rgbf& a):albedo(a){}
+        lambertian(shared_ptr<texture> a):albedo(a){}
+        lambertian(const color& a): albedo(make_shared<solid_color>(a)) {}
+
         virtual bool scatter(
             const ray& r_in,
             const hit_record& rec,
@@ -27,11 +30,11 @@ class lambertian:public material{
                 if (scatter_direction.near_zero())
                     scatter_direction = rec.normal;
                 scattered = ray(rec.p, scatter_direction,r_in.time());//光速很快，可以认为光线在同一时刻发出，所以在一个光线弹射时为固定时刻
-                attenuation = albedo;
+                attenuation = albedo->value(rec.u, rec.v, rec.p);
                 return true;
             }
     public:
-        rgbf albedo;
+     shared_ptr<texture> albedo;
 };
 
 class metal:public material{

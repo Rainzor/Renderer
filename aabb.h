@@ -10,6 +10,7 @@ class aabb{
         pointf3 min() const {return minimum;}
         pointf3 max() const {return maximum;}
 
+        //aabb hit:判断光线是否与包围盒相交
         bool hit(const ray& r, double tmin, double tmax) const{
             for(int a = 0; a < 3; a++){
                 auto invD = 1.0f / r.direction()[a];

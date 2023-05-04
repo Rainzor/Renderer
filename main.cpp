@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include "aarect.h"
 #include "bvh.h"
 #include "camera.h"
 #include "color.h"
@@ -12,15 +13,19 @@
 #include "moving_sphere.h"
 #include "sphere.h"
 
+
 #define NUM_THREADS 8
 
-rgbf ray_color(const ray& r, const hittable& world);
-rgbf ray_color(const ray& r, const hittable& world, int depth);
+color ray_color(const ray& r, const hittable& world);
+color ray_color(const ray& r, const color& background, const hittable& world, int depth);
 hittable_list random_scene();
 hittable_list two_spheres();
 hittable_list two_perlin_spheres();
 bvh_node random_bvh_scene();
 hittable_list earth();
+hittable_list simple_light();
+
+
 int main() {
     using namespace std::chrono;
     // Parallel
@@ -30,10 +35,10 @@ int main() {
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
     const int max_depth = 50;
+    int samples_per_pixel = 100;
 
-    std::vector<std::vector<rgbf>> image(image_height, std::vector<rgbf>(image_width, rgbf(0, 0, 0)));
+    std::vector<std::vector<color>> image(image_height, std::vector<color>(image_width, color(0, 0, 0)));
 
     // World
     hittable_list world;
@@ -41,13 +46,15 @@ int main() {
 
     pointf3 lookfrom;
     pointf3 lookat;
-    auto vfov = 40.0;
-    auto aperture = 0.0;
+    auto vfov = 40.0;//视野
+    auto aperture = 0.0;//光圈
+    color background(0, 0, 0);
 
     switch (0) {  // 这种用法是为了方便调试，可以直接切换场景
         case 1:
             world = random_scene();
             // bvh_world = random_bvh_scene();
+            background = color(0.70, 0.80, 1.00);
             lookfrom = pointf3(13, 2, 3);
             lookat = pointf3(0, 0, 0);
             vfov = 20.0;
@@ -55,21 +62,31 @@ int main() {
             break;
         case 2:
             world = two_spheres();
+            background = color(0.70, 0.80, 1.00);
             lookfrom = pointf3(13, 2, 3);
             lookat = pointf3(0, 0, 0);
             vfov = 20.0;
             break;
         case 3:
             world = two_perlin_spheres();
+            background = color(0.70, 0.80, 1.00);
+            lookfrom = pointf3(13, 2, 3);
+            lookat = pointf3(0, 0, 0);
+            vfov = 20.0;
+            break;
+        case 4:
+            world = earth();
             lookfrom = pointf3(13, 2, 3);
             lookat = pointf3(0, 0, 0);
             vfov = 20.0;
             break;
         default:
-        case 4:
-            world = earth();
-            lookfrom = pointf3(13, 2, 3);
-            lookat = pointf3(0, 0, 0);
+        case 5:
+            world = simple_light();
+            samples_per_pixel = 400;
+            background = color(0, 0, 0);
+            lookfrom = pointf3(26, 3, 6);
+            lookat = pointf3(0, 2, 0);
             vfov = 20.0;
             break;
     }
@@ -85,19 +102,20 @@ int main() {
     int i, j, k, s;
     double u, v;
     ray r;
-    rgbf pixel_color, image_color;
+    color pixel_color, image_color;
     auto start = high_resolution_clock::now();
     int sum = 0;
 #pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(image, sum)  // OpenMP
     for (k = 0; k < image_height * image_width; k++) {
         j = k / image_width;
         i = k % image_width;
-        pixel_color = rgbf(0, 0, 0);
-        for (s = 0, image_color = rgbf(0, 0, 0); s < samples_per_pixel; s += 1) {
+        pixel_color = color(0, 0, 0);
+        for (s = 0, image_color = color(0, 0, 0); s < samples_per_pixel; s += 1) {
+            //制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
             u = (i + random_double()) / (image_width - 1);
             v = (j + random_double()) / (image_height - 1);
             r = cam.get_ray(u, v);
-            pixel_color += ray_color(r, world, max_depth);
+            pixel_color += ray_color(r,background, world, max_depth);
         }
         image[j][i] = pixel_color;
 #pragma omp critical
@@ -108,9 +126,10 @@ int main() {
             }
         }
     }
+    //按顺序写入图片，结果导出到 .ppm 格式文件中
     for (j = image_height - 1; j >= 0; j--) {
         for (i = 0; i < image_width; i++) {
-            write_color(std::cout, image[j][i], samples_per_pixel);
+            write_color(std::cout, image[j][i], samples_per_pixel);//这里根据采样次数来计算平均颜色RGB
         }
     }
 
@@ -120,39 +139,62 @@ int main() {
               << "Time Cost:" << duration.count() << " ms" << std::endl;
 }
 
-rgbf ray_color(const ray& r, const hittable& world) {
+color ray_color(const ray& r, const color& background, const hittable& world) {
     struct hit_record rec;
     float p_RR = 0.95;                          // 概率反射系数
+
+    if(!world.hit(r, 0.0001, infinity, rec))
+        return background;
+
+    ray scattered;
+    color attenuation;                                          // 吸收系数,相交处的颜色的吸收
+    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);  // 发射光线的颜色
+    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+        if(random_double() < p_RR)
+            return emitted + attenuation * ray_color(scattered, background, world) / p_RR;
+        else
+            return color(0, 0, 0);//递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
+    }else{
+        return emitted;
+    }
+
     if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
         ray scattered;
-        rgbf attenuation;
+        color attenuation;
+        //根据入射光线，撞击点来通过材料类获取反射光线和吸收系数
         if (random_double() < p_RR && (rec.mat_ptr->scatter(r, rec, attenuation, scattered)))
             // attenuation 是吸收系数,反应处颜色的变化
             return attenuation * ray_color(scattered, world) / p_RR;  // 光线递归
         else
-            return rgbf(0, 0, 0);
+            return color(0, 0, 0);
     }
     // 背景颜色
     vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
     auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
-    return (1.0 - t) * rgbf(1.0, 1.0, 1.0) + t * rgbf(0.5, 0.7, 1.0);
+    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-rgbf ray_color(const ray& r, const hittable& world, int depth) {
+color ray_color(const ray& r, const color& background, const hittable& world, int depth) {
     struct hit_record rec;
+    //如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
     if (depth <= 0)
-        return rgbf(0, 0, 0);
-    if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
-        ray scattered;
-        rgbf attenuation;
-        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))  // 这里用上了指针的相互引用
-            return attenuation * ray_color(scattered, world, depth - 1);
-        return rgbf(0, 0, 0);
-    }
-    // 背景颜色
-    vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
-    auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
-    return (1.0 - t) * rgbf(1.0, 1.0, 1.0) + t * rgbf(0.5, 0.7, 1.0);
+        return color(0, 0, 0);
+    
+    //如果光线没有撞击到物体，则返回背景颜色
+    if (!world.hit(r, 0.0001, infinity, rec))  // 在0-infinity范围内找最近邻的表面
+        return background;
+
+    ray scattered;
+    color attenuation;// 吸收系数,相交处的颜色的吸收
+    color emitted  = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);//发射光线的颜色
+    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))  // 如果是可以反射的材料
+        return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
+    else//否则返回发射光线的颜色（光源）
+        return emitted;
+    // // 背景颜色
+    // vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
+    // auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
+    // return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
 hittable_list random_scene() {
@@ -281,4 +323,16 @@ hittable_list earth(){
     auto globe = make_shared<sphere>(pointf3(0,0,0), 2, earth_surface);
 
     return hittable_list(globe);
+}
+
+hittable_list simple_light(){
+    hittable_list objects;
+    auto pertext = make_shared<noise_texture>(4);
+    objects.add(make_shared<sphere>(pointf3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+    objects.add(make_shared<sphere>(pointf3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+    auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+    objects.add(make_shared<xy_rect>(3, 5, 1, 3, -2, difflight));
+
+    return objects;
 }

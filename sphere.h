@@ -57,7 +57,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)const
     rec.p = r.at(rec.t);
     vecf3 outward_normal = (rec.p-center)/radius;
     rec.set_face_normal(r,outward_normal);
-    get_sphere_uv(outward_normal, rec.u, rec.v);//获取纹理坐标
+    get_sphere_uv(outward_normal, rec.u, rec.v);//根据三维位置获取球面的纹理坐标
     rec.mat_ptr = mat_ptr;//返回材料性质
     return true;
 }

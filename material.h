@@ -4,9 +4,16 @@
 #include "rtweekend.h"
 #include "hittable.h"
 #include "texture.h"
-
+/* Material类是一个抽象类，它的子类有lambertian，metal，dielectric，diffuse_light
+   它主要用来决定光线的散射方向和吸收系数
+*/
 class material {
    public:
+    //材料本身具有自发光的属性，可以认为是一种特殊的纹理
+    virtual color emitted(double u, double v, const pointf3& p) const {
+        return color(0, 0, 0);
+    }
+    //不同的材料对光线有不同的散射方程和颜色吸收系数
     virtual bool scatter(
         const ray& r_in,
         const hit_record& rec,//击中点
@@ -30,7 +37,7 @@ class lambertian:public material{
                 if (scatter_direction.near_zero())
                     scatter_direction = rec.normal;
                 scattered = ray(rec.p, scatter_direction,r_in.time());//光速很快，可以认为光线在同一时刻发出，所以在一个光线弹射时为固定时刻
-                attenuation = albedo->value(rec.u, rec.v, rec.p);
+                attenuation = albedo->value(rec.u, rec.v, rec.p);//根据击中点的纹理坐标和坐标，从纹理类中获取当前的纹理颜色
                 return true;
             }
     public:
@@ -92,8 +99,28 @@ class dielectric:public material{
 
     public:
         double ir;//折射率
+};
 
 
+class diffuse_light:public material{
+    public:
+        diffuse_light(shared_ptr<texture> a):emit(a){}
+        diffuse_light(color c):emit(make_shared<solid_color>(c)){}
+
+        virtual bool scatter(
+            const ray& r_in,
+            const hit_record& rec,
+            rgbf& attenuation,
+            ray& scattered) const override{
+                return false;
+            }
+
+        virtual rgbf emitted(double u,double v,const pointf3& p)const override{
+            return emit->value(u,v,p);
+        }
+
+    public:
+        shared_ptr<texture> emit;
 };
 
 #endif

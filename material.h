@@ -21,7 +21,7 @@ class material {
         ray& scattered//散射光方向
         ) const = 0;
 };
-
+//漫反射粗糙材质
 class lambertian:public material{
     //粗糙的表面,其光反射分布接近漫反射，所以往往与入射光无关
     public:
@@ -44,7 +44,7 @@ class lambertian:public material{
     public:
      shared_ptr<texture> albedo;
 };
-
+//反射金属材质
 class metal:public material{
     public:
         metal(const rgbf&a,double f):albedo(a),fuzz(f<1?f:1){}
@@ -64,7 +64,7 @@ class metal:public material{
         double fuzz;
 };
 
-
+//折射透明材质
 class dielectric:public material{
     public:
         dielectric(double index_of_refraction):ir(index_of_refraction){}
@@ -102,7 +102,7 @@ class dielectric:public material{
         double ir;//折射率
 };
 
-
+//自发光材质
 class diffuse_light:public material{
     public:
         diffuse_light(shared_ptr<texture> a):emit(a){}
@@ -122,6 +122,31 @@ class diffuse_light:public material{
 
     public:
         shared_ptr<texture> emit;
+};
+
+
+//各向同性的散射材质
+class isotropic : public material {
+       public:
+        isotropic(color c)
+            : albedo(make_shared<solid_color>(c)) {}
+        isotropic(shared_ptr<texture> a)
+            : albedo(a) {}
+
+        virtual bool scatter(
+            const ray& r_in,
+            const hit_record& rec,
+            color& attenuation,
+            ray& scattered) const override {
+
+            //散射方向为随机的单位球内的随机点，保持散射方向的各向同性
+            scattered = ray(rec.p, random_in_unit_sphere(), r_in.time());
+            attenuation = albedo->value(rec.u, rec.v, rec.p);
+            return true;
+        }
+
+       public:
+        shared_ptr<texture> albedo;
 };
 
 #endif

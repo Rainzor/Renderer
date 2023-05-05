@@ -5,14 +5,15 @@
 #include <iostream>
 #include <vector>
 #include "aarect.h"
+#include "box.h"
 #include "bvh.h"
 #include "camera.h"
 #include "color.h"
+#include "constant_medium.h"
 #include "hittable_list.h"
 #include "material.h"
 #include "moving_sphere.h"
 #include "sphere.h"
-#include "box.h"
 
 #define NUM_THREADS 16  // 线程数
 
@@ -25,7 +26,7 @@ bvh_node world2bvh_scene(hittable_list& world);
 hittable_list earth();
 hittable_list simple_light();
 hittable_list cornell_box();
-
+hittable_list cornell_smoke();
 int main() {
     using namespace std::chrono;
     // Parallel
@@ -88,13 +89,22 @@ int main() {
             vfov = 20.0;
             max_depth = 100;
             break;
-        default:
         case 6:
             world = cornell_box();
             aspect_ratio = 1.0;
             image_width = 600;
             samples_per_pixel = 200;
             background = color(0, 0, 0);
+            lookfrom = pointf3(278, 278, -800);
+            lookat = pointf3(278, 278, 0);
+            vfov = 40.0;
+            break;
+        default:
+        case 7:
+            world = cornell_smoke();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
             lookfrom = pointf3(278, 278, -800);
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
@@ -284,7 +294,6 @@ hittable_list random_scene() {
         return objs;
     }
 }
-
 hittable_list two_spheres() {
     hittable_list objects;
 
@@ -295,7 +304,6 @@ hittable_list two_spheres() {
 
     return objects;
 }
-
 hittable_list two_perlin_spheres() {
     hittable_list objects;
 
@@ -311,7 +319,6 @@ bvh_node world2bvh_scene(hittable_list& world) {
     bvh_node objs(world, 0, 1);
     return objs;
 }
-
 hittable_list earth(){
     auto earth_texture = make_shared<image_texture>("img/earthmap.jpg");
     auto earth_surface = make_shared<lambertian>(earth_texture);
@@ -319,7 +326,6 @@ hittable_list earth(){
 
     return hittable_list(globe);
 }
-
 hittable_list simple_light(){
     hittable_list objects;
     auto pertext = make_shared<noise_texture>(4);
@@ -355,5 +361,33 @@ hittable_list cornell_box() {
     box2 = make_shared<rotate_y>(box2, -18);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
     objects.add(box2);
+    return objects;
+}
+hittable_list cornell_smoke() {
+    hittable_list objects;
+
+    auto red = make_shared<lambertian>(color(.65, .05, .05));
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<xz_rect>(113, 443, 127, 432, 554, light));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
+    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
+
+    shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
+    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
+
+    objects.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
+    objects.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
+
     return objects;
 }

@@ -36,7 +36,8 @@ class sphere : public hittable {
 };
 
 bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)const{
-    //求解一元二次方程，判断光线在给定范围内是否与球相交
+    //求解一元二次方程，根据光线的方向和原点，求解光线与球的交点
+    //判断光线在给定范围内是否与球相交
     vecf3 oc = r.origin() - center;//A-C
     auto a = r.direction().length_squared();
     auto half_b = dot(oc, r.direction());
@@ -47,9 +48,9 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)const
     auto sqrtd = sqrt(discriminant);
 
     // Find the nearest root that lies in the acceptable range.
-    auto root = (-half_b - sqrtd) / a;//靠近相机的交点
-    if (root < t_min || t_max < root) {
-        root = (-half_b + sqrtd) / a;//远离相机的交点
+    auto root = (-half_b - sqrtd) / a;//靠近正向传播光源的交点，或者在物体内部光源后方
+    if (root < t_min || t_max < root) {//如果光源在内部
+        root = (-half_b + sqrtd) / a;
         if (root < t_min || t_max < root)
             return false;
     }

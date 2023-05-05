@@ -26,6 +26,7 @@ class aabb{
             return true;
         }
     public:
+    //box可以看成是两个点的集合，一个最小点，一个最大点，描述了一个长方体
         pointf3 minimum;
         pointf3 maximum;
 };

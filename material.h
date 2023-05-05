@@ -23,6 +23,7 @@ class material {
 };
 
 class lambertian:public material{
+    //粗糙的表面,其光反射分布接近漫反射，所以往往与入射光无关
     public:
         lambertian(shared_ptr<texture> a):albedo(a){}
         lambertian(const color& a): albedo(make_shared<solid_color>(a)) {}
@@ -115,7 +116,7 @@ class diffuse_light:public material{
                 return false;
             }
 
-        virtual rgbf emitted(double u,double v,const pointf3& p)const override{
+        virtual color emitted(double u,double v,const pointf3& p)const override{
             return emit->value(u,v,p);
         }
 

@@ -44,9 +44,9 @@ class noise_texture:public texture{
         noise_texture() {}
         noise_texture(double sc):scale(sc){}
         virtual color value(double u, double v, const pointf3& p) const override {
-            return color(1, 1, 1) * noise.turb(scale * p);  // 返回值与p有关而与纹理坐标无关
+            //return color(1, 1, 1) * noise.turb(scale * p);  // 返回值与p有关而与纹理坐标无关
             //接近大理石的纹路，变化随着相位而改变
-            //return color(1, 1, 1) * 0.5 * (1 + sin(scale * p.z() + 10 * noise.turb(p)));
+            return color(1, 1, 1) * 0.5 * (1 + sin(scale * p.z() + 10 * noise.turb(p)));
         }
 
     public:

@@ -183,8 +183,8 @@ vecf3 random_in_unit_hemisphere(const vecf3& normal) {
 }
 vecf3 random_on_unit_sphere() {
     while (true) {
-        float u = random_double();
-        float v = random_double();
+        float u = random_double()*2-1;
+        float v = random_double()*2-1;
         float r2 = u * u + v * v;
         if (r2 >= 1)
             continue;
@@ -192,6 +192,7 @@ vecf3 random_on_unit_sphere() {
     }
 }
 vecf3 random_unit_vector(){
+    // return unit_vector(random_in_unit_sphere());
     return random_on_unit_sphere();
 }
 
@@ -206,8 +207,8 @@ vecf3 random_in_unit_disk() {
 
 vecf3 random_on_unit_hemisphere() {
     while (true) {
-        float u = random_double();
-        float v = random_double();
+        float u = random_double()*2-1;
+        float v = random_double()*2-1;
         float r2 = u * u + v * v;
         if (r2 >= 1)
             continue;

@@ -1,9 +1,8 @@
 #ifndef VEC3_H
 #define VEC3_H
-
+#include "rtweekend.h"
 #include <cmath>
 #include <iostream>
-
 using std::sqrt;
 
 template <typename T>

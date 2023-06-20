@@ -1,9 +1,8 @@
-#include "rtweekend.h"
-
-#include <omp.h>  // OpenMP
 #include <chrono>
 #include <iostream>
+#include <omp.h> // OpenMP
 #include <vector>
+#include "rtweekend.h"
 #include "aarect.h"
 #include "box.h"
 #include "bvh.h"
@@ -49,8 +48,7 @@ int main() {
     auto vfov = 40.0;//视野
     auto aperture = 0.0;//光圈
     color background(0, 0, 0);
-
-    switch (0) {  // 这种用法是为了方便调试，可以直接切换场景
+    switch (1) {  // 这种用法是为了方便调试，可以直接切换场景
         case 1:
             world = random_scene();
             // bvh_world = random_bvh_scene();

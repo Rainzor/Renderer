@@ -201,35 +201,35 @@ color ray_color(const ray& r, const color& background, const hittable& world) {
     struct hit_record rec;
     float p_RR = 0.95;                          // 概率反射系数
 
-    if(!world.hit(r, 0.0001, infinity, rec))
+    if(!world.hit(r, 0.0001, infinity, rec))// 在0-infinity范围内找最近邻的表面
         return background;
 
     ray scattered;
-    color attenuation;                                          // 吸收系数,相交处的颜色的吸收
+    color attenuation; // 吸收系数,相交处的颜色的吸收
     color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);  // 发射光线的颜色
-    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {// 如果是可以反射的材料
         if(random_double() < p_RR)
             return emitted + attenuation * ray_color(scattered, background, world) / p_RR;
         else
             return color(0, 0, 0);//递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
-    }else{
+    } else { // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
         return emitted;
     }
 
-    if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
-        ray scattered;
-        color attenuation;
-        //根据入射光线，撞击点来通过材料类获取反射光线和吸收系数
-        if (random_double() < p_RR && (rec.mat_ptr->scatter(r, rec, attenuation, scattered)))
-            // attenuation 是吸收系数,反应处颜色的变化
-            return attenuation * ray_color(scattered, background, world) / p_RR;  // 光线递归
-        else
-            return color(0, 0, 0);
-    }
-    // 背景颜色
-    vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
-    auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
-    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+    // if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
+    //     ray scattered;
+    //     color attenuation;
+    //     //根据入射光线，撞击点来通过材料类获取反射光线和吸收系数
+    //     if (random_double() < p_RR && (rec.mat_ptr->scatter(r, rec, attenuation, scattered)))
+    //         // attenuation 是吸收系数,反应处颜色的变化
+    //         return attenuation * ray_color(scattered, background, world) / p_RR;  // 光线递归
+    //     else
+    //         return color(0, 0, 0);
+    // }
+    // // 背景颜色
+    // vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
+    // auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
+    // return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
 color ray_color(const ray& r, const color& background, const hittable& world, int depth) {
@@ -246,13 +246,11 @@ color ray_color(const ray& r, const color& background, const hittable& world, in
     color attenuation;// 吸收系数,相交处的颜色的吸收
     color emitted  = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);//发射光线的颜色
     if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))  // 如果是可以反射的材料
+        //返回光源+反射光线的颜色（递归）
         return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
-    //否则返回发射光线的颜色（光源）
-    return emitted;
-    // // 背景颜色
-    // vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
-    // auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
-    // return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+    //否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
+    else
+        return emitted;
 }
 
 hittable_list random_scene() {

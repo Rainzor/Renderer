@@ -5,7 +5,7 @@
 
 #include "hittable.h"
 
-class xy_rect : public hittable {
+class xy_rect : public hittable {//法向量为(0,0,1)
     public:
         xy_rect(){}
 
@@ -39,13 +39,15 @@ bool xy_rect::hit(const ray& r, double t_min, double t_max, hit_record& rec) con
         rec.t = t;
 
         auto outward_normal = vecf3(0, 0, 1);  // 法线
-        rec.set_face_normal(r, outward_normal);//修正朝向，使得与入射光线方向相反
+        // 修正朝向，使得与入射光线方向相反
+        // 修改rec的 front_face判定，判断该面是否朝向光线
+        rec.set_face_normal(r, outward_normal);
         rec.mat_ptr = mp;
         rec.p = r.at(t);
         return true;
 }
 
-class xz_rect : public hittable {
+class xz_rect : public hittable {//法向量为(0,1,0)
        public:
         xz_rect() {}
 
@@ -83,7 +85,7 @@ bool xz_rect::hit(const ray& r, double t_min, double t_max, hit_record& rec) con
         return true;
 }
 
-class yz_rect : public hittable {
+class yz_rect : public hittable {//法向量为(1,0,0)
        public:
         yz_rect() {}
 

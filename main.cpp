@@ -90,7 +90,7 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 5;
+        samples_per_pixel = 100;
         background = color(0, 0, 0);
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
@@ -204,7 +204,7 @@ color ray_color(const ray &r, const color &background, const hittable &world) {
     color attenuation; // 吸收系数,相交处的颜色的吸收
     double pdf;
     color albedo;
-    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);  // 发射光线的颜色
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
     if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) { // 如果是可以反射的材料
         if (random_double() < p_RR)
             return emitted + attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) * ray_color(scattered, background, world) / (p_RR * pdf);
@@ -229,7 +229,7 @@ color ray_color(const ray &r, const color &background, const hittable &world, in
     color attenuation; // 吸收系数,相交处的颜色的吸收
     double pdf;
     color albedo;
-    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p); // 发射光线的颜色
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
 
     if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) // 如果是可以反射的材料
         // 光线追踪到光源处，返回发射光线的颜色（光源）递归结束
@@ -360,7 +360,7 @@ hittable_list cornell_box() {
 
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
-    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));

@@ -14,14 +14,14 @@
 #include "moving_sphere.h"
 #include "sphere.h"
 
-#define NUM_THREADS 8  // 线程数
+#define NUM_THREADS 8 // 线程数
 
-color ray_color(const ray& r, const color& background, const hittable& world);
-color ray_color(const ray& r, const color& background, const hittable& world, int depth);
+color ray_color(const ray &r, const color &background, const hittable &world);
+color ray_color(const ray &r, const color &background, const hittable &world, int depth);
 hittable_list random_scene();
 hittable_list two_spheres();
 hittable_list two_perlin_spheres();
-bvh_node world2bvh_scene(hittable_list& world);
+bvh_node world2bvh_scene(hittable_list &world);
 hittable_list earth();
 hittable_list simple_light();
 hittable_list cornell_box();
@@ -30,96 +30,93 @@ hittable_list final_scene();
 int main() {
     using namespace std::chrono;
     // Parallel
-    omp_set_num_threads(NUM_THREADS);  // 设置线程
+    omp_set_num_threads(NUM_THREADS); // 设置线程
 
     // Image
     auto aspect_ratio = 3.0 / 2.0;
     int image_width = 400;
     int max_depth = 50;
     int samples_per_pixel = 100;
-
-
     // World
     hittable_list world;
     bvh_node bvh_world;
 
     pointf3 lookfrom;
     pointf3 lookat;
-    auto vfov = 40.0;//视野
-    auto aperture = 0.0;//光圈
+    auto vfov = 40.0;    // 视野
+    auto aperture = 0.0; // 光圈
     color background(0, 0, 0);
-    switch (1) {  // 这种用法是为了方便调试，可以直接切换场景
-        case 1:
-            world = random_scene();
-            // bvh_world = random_bvh_scene();
-            background = color(0.70, 0.80, 1.00);
-            lookfrom = pointf3(13, 2, 3);
-            lookat = pointf3(0, 0, 0);
-            vfov = 20.0;
-            aperture = 0.1;
-            break;
-        case 2:
-            world = two_spheres();
-            background = color(0.70, 0.80, 1.00);
-            lookfrom = pointf3(13, 2, 3);
-            lookat = pointf3(0, 0, 0);
-            vfov = 20.0;
-            break;
-        case 3:
-            world = two_perlin_spheres();
-            background = color(0.70, 0.80, 1.00);
-            lookfrom = pointf3(13, 2, 3);
-            lookat = pointf3(0, 0, 0);
-            vfov = 20.0;
-            break;
-        case 4:
-            world = earth();
-            background = color(0.70, 0.80, 1.00);
-            lookfrom = pointf3(13, 2, 3);
-            lookat = pointf3(0, 0, 0);
-            vfov = 20.0;
-            break;
-        case 5:
-            world = simple_light();
-            samples_per_pixel = 400;
-            background = color(0, 0, 0);
-            lookfrom = pointf3(26, 3, 6);
-            lookat = pointf3(0, 2, 0);
-            vfov = 20.0;
-            max_depth = 100;
-            break;
-        case 6:
-            world = cornell_box();
-            aspect_ratio = 1.0;
-            image_width = 600;
-            samples_per_pixel = 200;
-            background = color(0, 0, 0);
-            lookfrom = pointf3(278, 278, -800);
-            lookat = pointf3(278, 278, 0);
-            vfov = 40.0;
-            break;
-        case 7:
-            world = cornell_smoke();
-            aspect_ratio = 1.0;
-            image_width = 600;
-            samples_per_pixel = 200;
-            lookfrom = pointf3(278, 278, -800);
-            lookat = pointf3(278, 278, 0);
-            vfov = 40.0;
-            break;
-        default:
-        case 8:
-            world = final_scene();
-            aspect_ratio = 1.0;
-            image_width = 800;
-            samples_per_pixel = 10000;
-            background = color(0, 0, 0);
-            lookfrom = pointf3(478, 278, -600);
-            lookat = pointf3(278, 278, 0);
-            vfov = 40.0;
-            break;
+    switch (6) {         // 这种用法是为了方便调试，可以直接切换场景
+    case 1:
+        world = random_scene();
+        // bvh_world = random_bvh_scene();
+        background = color(0.70, 0.80, 1.00);
+        lookfrom = pointf3(13, 2, 3);
+        lookat = pointf3(0, 0, 0);
+        vfov = 20.0;
+        aperture = 0.1;
+        break;
+    case 2:
+        world = two_spheres();
+        background = color(0.70, 0.80, 1.00);
+        lookfrom = pointf3(13, 2, 3);
+        lookat = pointf3(0, 0, 0);
+        vfov = 20.0;
+        break;
+    case 3:
+        world = two_perlin_spheres();
+        background = color(0.70, 0.80, 1.00);
+        lookfrom = pointf3(13, 2, 3);
+        lookat = pointf3(0, 0, 0);
+        vfov = 20.0;
+        break;
+    case 4:
+        world = earth();
+        background = color(0.70, 0.80, 1.00);
+        lookfrom = pointf3(13, 2, 3);
+        lookat = pointf3(0, 0, 0);
+        vfov = 20.0;
+        break;
+    case 5:
+        world = simple_light();
+        samples_per_pixel = 400;
+        background = color(0, 0, 0);
+        lookfrom = pointf3(26, 3, 6);
+        lookat = pointf3(0, 2, 0);
+        vfov = 20.0;
+        max_depth = 100;
+        break;
+    case 6:
+        world = cornell_box();
+        aspect_ratio = 1.0;
+        image_width = 600;
+        samples_per_pixel = 100;
+        background = color(0, 0, 0);
+        lookfrom = pointf3(278, 278, -800);
+        lookat = pointf3(278, 278, 0);
+        vfov = 40.0;
+        break;
+    case 7:
+        world = cornell_smoke();
+        aspect_ratio = 1.0;
+        image_width = 600;
+        samples_per_pixel = 200;
+        lookfrom = pointf3(278, 278, -800);
+        lookat = pointf3(278, 278, 0);
+        vfov = 40.0;
+        break;
+    default:
+    case 8:
+        world = final_scene();
+        aspect_ratio = 1.0;
+        image_width = 800;
+        samples_per_pixel = 10000;
+        background = color(0, 0, 0);
+        lookfrom = pointf3(478, 278, -600);
+        lookat = pointf3(278, 278, 0);
+        vfov = 40.0;
+        break;
     }
-
 
     // Camera
     vecf3 vup(0, 1, 0);
@@ -128,32 +125,30 @@ int main() {
 
     camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
-
-    //Render
-    std::vector<std::vector<color>> image(image_height, std::vector<color>(image_width, color(0, 0, 0)));//img
+    // Render
+    std::vector<std::vector<color>> image(image_height, std::vector<color>(image_width, color(0, 0, 0))); // img
 
     std::cout << "P3\n"
               << image_width << ' ' << image_height << "\n255\n";
-
-
     int i, j, k, s;
     double u, v;
     ray r;
     color pixel_color, image_color;
     auto start = high_resolution_clock::now();
     int sum = 0;
-#pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(image, sum)  // OpenMP
+
+#pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(image, sum) // OpenMP
     for (k = 0; k < image_height * image_width; k++) {
         j = k / image_width;
         i = k % image_width;
-            //std::cerr << "\r(i,j): " << i << ' ' << j << std::flush;
+        // std::cerr << "\r(i,j): " << i << ' ' << j << std::flush;
         pixel_color = color(0, 0, 0);
         for (s = 0, image_color = color(0, 0, 0); s < samples_per_pixel; s += 1) {
-            //制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
+            // 制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
             u = (i + random_double()) / (image_width - 1);
             v = (j + random_double()) / (image_height - 1);
             r = cam.get_ray(u, v);
-            pixel_color += ray_color(r,background, world,max_depth);
+            pixel_color += ray_color(r, background, world, max_depth);
         }
         image[j][i] = pixel_color;
 #pragma omp critical
@@ -164,22 +159,23 @@ int main() {
             }
         }
     }
-    
-    //按顺序写入图片，结果导出到 .ppm 格式文件中
+
+    // 按顺序写入图片，结果导出到 .ppm 格式文件中
     for (j = image_height - 1; j >= 0; j--) {
         for (i = 0; i < image_width; i++) {
-            write_color(std::cout, image[j][i], samples_per_pixel);//这里根据采样次数来计算平均颜色RGB
+            write_color(std::cout, image[j][i], samples_per_pixel); // 这里根据采样次数来计算平均颜色RGB
         }
     }
 
     auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start);
-    auto minu = duration_cast<minutes>(end - start);
-    auto sec = duration_cast<seconds>(end - start)-minu*60;
+    auto duration = duration_cast<seconds>(end - start);
 
     std::cerr << std::endl
-              << "Time Cost:" << minu.count() << "m" << sec.count() << "s" << std::endl;
+              << "Time Cost:" << duration.count() << "s" << std::endl;
 
+    /*
+    No Parallel
+    */
     // for (int j = image_height - 1; j >= 0; --j) {
     //     std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
     //     for (int i = 0; i < image_width; ++i) {
@@ -197,58 +193,48 @@ int main() {
     // std::cerr << "\nDone.\n";
 }
 
-color ray_color(const ray& r, const color& background, const hittable& world) {
+color ray_color(const ray &r, const color &background, const hittable &world) {
     struct hit_record rec;
-    float p_RR = 0.95;                          // 概率反射系数
+    float p_RR = 0.95;                        // 概率反射系数
 
-    if(!world.hit(r, 0.0001, infinity, rec))// 在0-infinity范围内找最近邻的表面
+    if (!world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
         return background;
 
     ray scattered;
     color attenuation; // 吸收系数,相交处的颜色的吸收
+    double pdf;
+    color albedo;
     color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);  // 发射光线的颜色
-    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {// 如果是可以反射的材料
-        if(random_double() < p_RR)
-            return emitted + attenuation * ray_color(scattered, background, world) / p_RR;
+    if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) { // 如果是可以反射的材料
+        if (random_double() < p_RR)
+            return emitted + attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) * ray_color(scattered, background, world) / (p_RR * pdf);
         else
-            return color(0, 0, 0);//递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
-    } else { // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
+            return color(0, 0, 0); // 递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
+    } else {                       // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
         return emitted;
     }
-
-    // if (world.hit(r, 0.0001, infinity, rec)) {  // 在0-infinity范围内找最近邻的表面
-    //     ray scattered;
-    //     color attenuation;
-    //     //根据入射光线，撞击点来通过材料类获取反射光线和吸收系数
-    //     if (random_double() < p_RR && (rec.mat_ptr->scatter(r, rec, attenuation, scattered)))
-    //         // attenuation 是吸收系数,反应处颜色的变化
-    //         return attenuation * ray_color(scattered, background, world) / p_RR;  // 光线递归
-    //     else
-    //         return color(0, 0, 0);
-    // }
-    // // 背景颜色
-    // vecf3 unit_direction = unit_vector(r.direction());  // 单位化方向向量
-    // auto t = 0.5 * (unit_direction.y() + 1.0);          // y值在-1到1之间，重定义t在0到1之间
-    // return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-color ray_color(const ray& r, const color& background, const hittable& world, int depth) {
+color ray_color(const ray &r, const color &background, const hittable &world, int depth) {
     struct hit_record rec;
-    //如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
+    // 如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
     if (depth <= 0)
         return color(0, 0, 0);
-    
-    //如果光线没有撞击到物体，则返回背景颜色
-    if (!world.hit(r, 0.001, infinity, rec))  // 在0-infinity范围内找最近邻的表面
+
+    // 如果光线没有撞击到物体，则返回背景颜色
+    if (!world.hit(r, 0.001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
         return background;
 
     ray scattered;
-    color attenuation;// 吸收系数,相交处的颜色的吸收
-    color emitted  = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);//发射光线的颜色
-    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))  // 如果是可以反射的材料
-        //返回光源+反射光线的颜色（递归）
-        return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
-    //否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
+    color attenuation; // 吸收系数,相交处的颜色的吸收
+    double pdf;
+    color albedo;
+    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p); // 发射光线的颜色
+
+    if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf))  // 如果是可以反射的材料
+        // 返回光源+反射光线的颜色（递归）
+        return emitted + albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) * ray_color(scattered, background, world, depth - 1) / pdf;
+    // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
     else
         return emitted;
 }
@@ -323,20 +309,18 @@ hittable_list two_perlin_spheres() {
 
     return objects;
 }
-bvh_node world2bvh_scene(hittable_list& world) {
-
-
+bvh_node world2bvh_scene(hittable_list &world) {
     bvh_node objs(world, 0, 1);
     return objs;
 }
-hittable_list earth(){
+hittable_list earth() {
     auto earth_texture = make_shared<image_texture>("img/earthmap.jpg");
     auto earth_surface = make_shared<lambertian>(earth_texture);
-    auto globe = make_shared<sphere>(pointf3(0,0,0), 2, earth_surface);
+    auto globe = make_shared<sphere>(pointf3(0, 0, 0), 2, earth_surface);
 
     return hittable_list(globe);
 }
-hittable_list simple_light(){
+hittable_list simple_light() {
     hittable_list objects;
     auto pertext = make_shared<noise_texture>(4);
     objects.add(make_shared<sphere>(pointf3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
@@ -344,7 +328,7 @@ hittable_list simple_light(){
 
     auto difflight = make_shared<diffuse_light>(color(5, 5, 5));
     objects.add(make_shared<xy_rect>(3, 5, 1, 3, -2, difflight));
-    //objects.add(make_shared<sphere>(pointf3(1,7,0),2,difflight));
+    // objects.add(make_shared<sphere>(pointf3(1,7,0),2,difflight));
 
     return objects;
 }

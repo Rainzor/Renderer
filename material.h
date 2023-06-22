@@ -4,6 +4,7 @@
 #include "rtweekend.h"
 #include "hittable.h"
 #include "texture.h"
+#include "onb.h"
 /* Material类是一个抽象类，它的子类有lambertian，metal，dielectric，diffuse_light
    它主要用来决定光线的散射方向和吸收系数
 */
@@ -17,9 +18,20 @@ class material {
     virtual bool scatter(
         const ray& r_in,
         const hit_record& rec,//击中点
-        rgbf& attenuation,//衰减系数,对不同的颜色吸收不一样，则物体展现出不同的颜色
-        ray& scattered//散射光方向
-        ) const = 0;
+        color& alb,//衰减系数,对不同的颜色吸收不一样，则物体展现出不同的颜色
+        ray& scattered,//散射光方向
+        double& pdf//采样时的概率密度函数
+        ) const{
+            return false;
+        }
+
+    virtual double scattering_pdf(//返回散射光方向的概率密度函数
+        const ray& r_in,
+        const hit_record& rec,
+        const ray& scattered
+    ) const {
+        return 0;
+    }
 };
 //漫反射粗糙材质
 class lambertian:public material{
@@ -27,40 +39,58 @@ class lambertian:public material{
     public:
         lambertian(shared_ptr<texture> a):albedo(a){}
         lambertian(const color& a): albedo(make_shared<solid_color>(a)) {}
-
         virtual bool scatter(
             const ray& r_in,
             const hit_record& rec,
-            rgbf& attenuation,
-            ray& scattered) const override{
-                auto scatter_direction = rec.normal + random_unit_vector();
+            color& alb,
+            ray& scattered,
+            double& pdf
+            ) const override{
+                onb uvw;
+                uvw.build_from_w(rec.normal);
+                auto direction = uvw.local(random_cosine_direction());
+                // auto scatter_direction = rec.normal + random_unit_vector();
                 // Catch degenerate scatter direction
-                if (scatter_direction.near_zero())
-                    scatter_direction = rec.normal;
-                scattered = ray(rec.p, scatter_direction,r_in.time());//光速很快，可以认为光线在同一时刻发出，所以在一个光线弹射时为固定时刻
-                attenuation = albedo->value(rec.u, rec.v, rec.p);//根据击中点的纹理坐标和坐标，从纹理类中获取当前的纹理颜色
+                if (direction.near_zero())
+                    direction = rec.normal;
+                scattered = ray(
+                    rec.p, unit_vector(direction),r_in.time()); // 光速很快，可以认为光线在同一时刻发出，所以在一个光线弹射时为固定时刻
+                alb = albedo->value(rec.u, rec.v, rec.p);//根据击中点的纹理坐标和坐标，从纹理类中获取当前的纹理颜色
+                pdf = dot(uvw.w(), scattered.direction()) / pi;//pdf为cosθ/π
                 return true;
             }
+        
+        double scattering_pdf(
+            const ray& r_in,
+            const hit_record& rec,
+            const ray& scattered
+        ) const override {
+            auto cosine = dot(rec.normal, unit_vector(scattered.direction()));
+            return cosine < 0 ? 0 : cosine/pi;
+        }
+
     public:
      shared_ptr<texture> albedo;
 };
 //反射金属材质
 class metal:public material{
     public:
-        metal(const rgbf&a,double f):albedo(a),fuzz(f<1?f:1){}
+        metal(const color&a,double f):albedo(a),fuzz(f<1?f:1){}
         virtual bool scatter(//输出吸收系数和散射方向
             const ray& r_in,
             const hit_record& rec,
-            rgbf& attenuation,
-            ray& scattered) const override {
+            color& alb,
+            ray& scattered,
+            double& pdf
+            ) const override {
                 vecf3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
                 scattered = ray(rec.p, reflected+fuzz*random_in_unit_sphere(),r_in.time());
-                attenuation = albedo;
+                alb = albedo;
                 return (dot(scattered.direction(), rec.normal) > 0);
         }
 
     public:
-        rgbf albedo;
+        color albedo;
         double fuzz;
 };
 
@@ -72,9 +102,11 @@ class dielectric:public material{
         virtual bool scatter(
             const ray& r_in,
             const hit_record& rec,
-            rgbf& attenuation,
-            ray& scattered) const override{
-                attenuation = rgbf(1.0, 1.0, 1.0);//透明
+            color& alb,
+            ray& scattered,
+            double& pdf
+            ) const override{
+                alb = color(1.0, 1.0, 1.0);//透明
                 double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;//判断是进入还是离开物体
                 vecf3 unit_direction = unit_vector(r_in.direction());
                 double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);//cosθ
@@ -111,8 +143,10 @@ class diffuse_light:public material{
         virtual bool scatter(
             const ray& r_in,
             const hit_record& rec,
-            rgbf& attenuation,
-            ray& scattered) const override{
+            color& alb,
+            ray& scattered,
+            double &pdf
+            ) const override{
                 return false;
             }
 
@@ -136,12 +170,13 @@ class isotropic : public material {
         virtual bool scatter(
             const ray& r_in,
             const hit_record& rec,
-            color& attenuation,
-            ray& scattered) const override {
-
+            color& alb,
+            ray& scattered,
+            double& pdf
+            ) const override {
             //散射方向为随机的单位球内的随机点，保持散射方向的各向同性
             scattered = ray(rec.p, random_in_unit_sphere(), r_in.time());
-            attenuation = albedo->value(rec.u, rec.v, rec.p);
+            alb = albedo->value(rec.u, rec.v, rec.p);
             return true;
         }
 

@@ -235,6 +235,18 @@ vecf3 random_on_unit_hemisphere(const vecf3& normal) {
     return world_p;
 }
 
+
+vecf3 random_cosine_direction(){
+    float r1 = random_double();
+    float r2 = random_double();
+    float z = sqrt(1-r2);
+    float phi = 2*pi*r1;
+    float x = cos(phi)*sqrt(r2);
+    float y = sin(phi)*sqrt(r2);
+    return vecf3(x,y,z);
+
+}
+
 vecf3 reflect(const vecf3& v, const vecf3& n) {//反射
     return v - 2 * dot(v, n) * n;
 }

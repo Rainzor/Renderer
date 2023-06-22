@@ -90,7 +90,7 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 100;
+        samples_per_pixel = 5;
         background = color(0, 0, 0);
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
@@ -231,12 +231,30 @@ color ray_color(const ray &r, const color &background, const hittable &world, in
     color albedo;
     color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p); // 发射光线的颜色
 
-    if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf))  // 如果是可以反射的材料
-        // 返回光源+反射光线的颜色（递归）
-        return emitted + albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) * ray_color(scattered, background, world, depth - 1) / pdf;
-    // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
-    else
+    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) // 如果是可以反射的材料
+        // 光线追踪到光源处，返回发射光线的颜色（光源）递归结束
         return emitted;
+    // 光源位置，随机采样
+    auto on_light = pointf3(random_double(213, 343), 554, random_double(227, 332));
+    auto to_light = on_light - rec.p;
+    auto distance_squared = to_light.length_squared();
+    to_light = unit_vector(to_light);
+    if (dot(to_light, rec.normal) < 0)
+        // 如果光源在物体后面，返回发射光线的颜色（光源）递归结束
+        return emitted;
+
+    // 计算光源的pdf
+    auto light_area = (343 - 213) * (332 - 227);
+    auto light_cosine = fabs(to_light.y()); // 这里的因为光源法向朝下
+    if (light_cosine < 0.000001)
+        return emitted;
+    // pdf=距离平方/（cos(theta)*光源面积）
+    pdf = distance_squared / (light_cosine * light_area);
+    scattered = ray(rec.p, to_light, r.time()); // 选择从光源处发射光线
+
+    return emitted + 
+            albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
+            ray_color(scattered, background, world, depth - 1) / pdf;
 }
 
 hittable_list random_scene() {

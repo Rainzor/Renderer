@@ -93,7 +93,7 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 20;
+        samples_per_pixel = 100;
         background = color(0, 0, 0);
         //lights = make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light_material));
         lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
@@ -245,14 +245,22 @@ color ray_color(const ray &r, const color &background, const hittable &world, sh
         return emitted;
 
     // 采样光源
-    hittable_pdf plight(lights, rec.p);
-    scattered = ray(rec.p, plight.generate(), r.time());
-    pdf_val = plight.value(scattered.direction());
+    // hittable_pdf plight(lights, rec.p);
+    // scattered = ray(rec.p, plight.generate(), r.time());
+    // pdf_val = plight.value(scattered.direction());
 
     // cos采样
     // cosin_pdf p(rec.normal);
     // scattered = ray(rec.p, p.generate(), r.time());
     // pdf_val = p.value(scattered.direction());
+
+    // 混合采样
+    auto p0 = make_shared<cosin_pdf>(rec.normal);
+    auto p1 = make_shared<hittable_pdf>(lights, rec.p);
+    mixture_pdf mixed_pdf(p0, p1);
+
+    scattered = ray(rec.p, mixed_pdf.generate(), r.time());
+    pdf_val = mixed_pdf.value(scattered.direction());
 
     return emitted + 
             albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) *

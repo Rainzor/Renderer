@@ -21,6 +21,23 @@ class xy_rect : public hittable {//法向量为(0,0,1)
             return true;
         }
 
+        virtual double pdf_value(const pointf3& o, const vecf3& v) const override {
+            hit_record rec;
+            if (!this->hit(ray(o, v), 0.001, infinity, rec))
+                return 0;
+
+            auto area = (x1 - x0) * (y1 - y0);
+            auto distance_squared = rec.t * rec.t * v.length_squared();
+            auto cosine = fabs(dot(v, rec.normal) / v.length());
+
+            return distance_squared / (cosine * area);
+        }
+
+        virtual vecf3 random(const vecf3& o) const override {
+            auto random_point = pointf3(random_double(x0, x1), random_double(y0, y1), k);
+            return random_point - o;
+        }
+
     public:
         double x0, x1, y0, y1, k;
         shared_ptr<material> mp;
@@ -63,6 +80,23 @@ class xz_rect : public hittable {//法向量为(0,1,0)
             return true;
         }
 
+        virtual double pdf_value(const pointf3& o, const vecf3& v) const override {
+            hit_record rec;
+            if (!this->hit(ray(o, v), 0.001, infinity, rec))
+                return 0;
+
+            auto area = (x1 - x0) * (z1 - z0);
+            auto distance_squared = rec.t * rec.t * v.length_squared();
+            auto cosine = fabs(dot(v, rec.normal) / v.length());
+
+            return distance_squared / (cosine * area);
+        }
+
+        virtual vecf3 random(const vecf3& o) const override {
+            auto random_point = pointf3(random_double(x0, x1), k, random_double(z0, z1));
+            return random_point - o;
+        }
+
        public:
         double x0, x1, z0, z1, k;
         shared_ptr<material> mp;
@@ -99,6 +133,23 @@ class yz_rect : public hittable {//法向量为(1,0,0)
             // dimension a small amount.
             output_box = aabb(pointf3(k - 0.0001, y0, z0), pointf3(k + 0.0001, y1, z1));
             return true;
+        }
+
+        virtual double pdf_value(const pointf3& o, const vecf3& v) const override {
+            hit_record rec;
+            if (!this->hit(ray(o, v), 0.001, infinity, rec))
+                return 0;
+
+            auto area = (y1 - y0) * (z1 - z0);
+            auto distance_squared = rec.t * rec.t * v.length_squared();
+            auto cosine = fabs(dot(v, rec.normal) / v.length());
+
+            return distance_squared / (cosine * area);
+        }
+
+        virtual vecf3 random(const vecf3& o) const override {
+            auto random_point = pointf3(k, random_double(y0, y1), random_double(z0, z1));
+            return random_point - o;
         }
 
        public:

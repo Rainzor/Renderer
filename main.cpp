@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <omp.h> // OpenMP
 #include <vector>
 #include "rtweekend.h"
@@ -17,7 +18,7 @@
 #define NUM_THREADS 8 // 线程数
 
 color ray_color(const ray &r, const color &background, const hittable &world);
-color ray_color(const ray &r, const color &background, const hittable &world, int depth);
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights, int depth);
 hittable_list random_scene();
 hittable_list two_spheres();
 hittable_list two_perlin_spheres();
@@ -46,6 +47,8 @@ int main() {
     auto vfov = 40.0;    // 视野
     auto aperture = 0.0; // 光圈
     color background(0, 0, 0);
+    //auto light_material = make_shared<diffuse_light>(color(15, 15, 15));
+    shared_ptr<hittable> lights;
     switch (6) {         // 这种用法是为了方便调试，可以直接切换场景
     case 1:
         world = random_scene();
@@ -90,8 +93,10 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 100;
+        samples_per_pixel = 20;
         background = color(0, 0, 0);
+        //lights = make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light_material));
+        lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
         vfov = 40.0;
@@ -148,7 +153,7 @@ int main() {
             u = (i + random_double()) / (image_width - 1);
             v = (j + random_double()) / (image_height - 1);
             r = cam.get_ray(u, v);
-            pixel_color += ray_color(r, background, world, max_depth);
+            pixel_color += ray_color(r, background, world,lights, max_depth);
         }
         image[j][i] = pixel_color;
 #pragma omp critical
@@ -204,10 +209,13 @@ color ray_color(const ray &r, const color &background, const hittable &world) {
     color attenuation; // 吸收系数,相交处的颜色的吸收
     double pdf;
     color albedo;
+    //除了光源以外，自发光emitted都是黑色的(0,0,0)
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
     if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) { // 如果是可以反射的材料
         if (random_double() < p_RR)
-            return emitted + attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) * ray_color(scattered, background, world) / (p_RR * pdf);
+            return emitted + attenuation 
+                            * rec.mat_ptr->scattering_pdf(r, rec, scattered) 
+                            * ray_color(scattered, background, world) / (p_RR * pdf);
         else
             return color(0, 0, 0); // 递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
     } else {                       // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
@@ -215,7 +223,7 @@ color ray_color(const ray &r, const color &background, const hittable &world) {
     }
 }
 
-color ray_color(const ray &r, const color &background, const hittable &world, int depth) {
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights, int depth) {
     struct hit_record rec;
     // 如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
     if (depth <= 0)
@@ -227,34 +235,28 @@ color ray_color(const ray &r, const color &background, const hittable &world, in
 
     ray scattered;
     color attenuation; // 吸收系数,相交处的颜色的吸收
-    double pdf;
     color albedo;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
+    double pdf_val;
 
-    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) // 如果是可以反射的材料
+    //这里的是按照scattering_pdf来采样scattered ray的
+    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf_val)) // 如果是可以反射的材料
         // 光线追踪到光源处，返回发射光线的颜色（光源）递归结束
         return emitted;
-    // 光源位置，随机采样
-    auto on_light = pointf3(random_double(213, 343), 554, random_double(227, 332));
-    auto to_light = on_light - rec.p;
-    auto distance_squared = to_light.length_squared();
-    to_light = unit_vector(to_light);
-    if (dot(to_light, rec.normal) < 0)
-        // 如果光源在物体后面，返回发射光线的颜色（光源）递归结束
-        return emitted;
 
-    // 计算光源的pdf
-    auto light_area = (343 - 213) * (332 - 227);
-    auto light_cosine = fabs(to_light.y()); // 这里的因为光源法向朝下
-    if (light_cosine < 0.000001)
-        return emitted;
-    // pdf=距离平方/（cos(theta)*光源面积）
-    pdf = distance_squared / (light_cosine * light_area);
-    scattered = ray(rec.p, to_light, r.time()); // 选择从光源处发射光线
+    // 采样光源
+    hittable_pdf plight(lights, rec.p);
+    scattered = ray(rec.p, plight.generate(), r.time());
+    pdf_val = plight.value(scattered.direction());
+
+    // cos采样
+    // cosin_pdf p(rec.normal);
+    // scattered = ray(rec.p, p.generate(), r.time());
+    // pdf_val = p.value(scattered.direction());
 
     return emitted + 
             albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
-            ray_color(scattered, background, world, depth - 1) / pdf;
+            ray_color(scattered, background, world,lights, depth - 1) / pdf_val;
 }
 
 hittable_list random_scene() {

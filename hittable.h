@@ -8,7 +8,7 @@ class material;  // alert the compiler that the pointer is to a class
 struct hit_record {
     pointf3 p;//交点世界坐标
     vecf3 normal;//法向量
-    double t;//光线参数
+    double t;//光线走过的距离参数t: p = O + t*D
     double u,v;//纹理坐标
     bool front_face;//是否正面朝向
     shared_ptr<material> mat_ptr;//交点材质
@@ -28,6 +28,16 @@ class hittable {
     
     //返回物体的包围盒 output_box. bool值表示是否有包围盒 比如无限大平面就没有
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
+    //输入光线的起始点o和方向v，返回光线与物体相交点的pdf值
+    virtual double pdf_value(const pointf3& o, const vecf3& v) const {
+        return 0.0;
+    }
+    //输入光线的起点，返回从该点出发到物体表面采样点的方向
+    virtual vecf3 random(const vecf3& o) const {
+        return vecf3(1, 0, 0);
+    }
+
+
 };
 
 

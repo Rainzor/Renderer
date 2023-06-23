@@ -5,6 +5,8 @@
 #include "hittable.h"
 #include "texture.h"
 #include "onb.h"
+#include "pdf.h"
+
 /* Material类是一个抽象类，它的子类有lambertian，metal，dielectric，diffuse_light
    它主要用来决定光线的散射方向和吸收系数
 */

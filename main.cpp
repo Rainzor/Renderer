@@ -18,7 +18,7 @@
 #define NUM_THREADS 8 // 线程数
 
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights);
-color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights, int depth);
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth);
 hittable_list random_scene();
 hittable_list two_spheres();
 hittable_list two_perlin_spheres();
@@ -48,7 +48,7 @@ int main() {
     auto aperture = 0.0; // 光圈
     color background(0, 0, 0);
     //auto light_material = make_shared<diffuse_light>(color(15, 15, 15));
-    shared_ptr<hittable> lights;
+    auto lights = make_shared<hittable_list>();
     switch (6) {         // 这种用法是为了方便调试，可以直接切换场景
     case 1:
         world = random_scene();
@@ -95,10 +95,10 @@ int main() {
         image_width = 600;
         samples_per_pixel = 256;
         background = color(0, 0, 0);
-        lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
-        //lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
+        //lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
+        lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
         //加入一个球面光源
-        //lights->add(make_shared<sphere>(pointf3(190, 90, 190), 90, shared_ptr<material>()));
+        lights->add(make_shared<sphere>(pointf3(190, 90, 190), 90, shared_ptr<material>()));
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
         vfov = 40.0;
@@ -174,12 +174,6 @@ int main() {
         }
     }
 
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(end - start);
-
-    std::cerr << std::endl
-              << "Time Cost:" << duration.count() << "s" << std::endl;
-
     /*
     No Parallel
     */
@@ -191,13 +185,18 @@ int main() {
     //             auto u = (i + random_double()) / (image_width - 1);
     //             auto v = (j + random_double()) / (image_height - 1);
     //             ray r = cam.get_ray(u, v);
-    //             pixel_color += ray_color(r, background, world, max_depth);
+    //             pixel_color += ray_color(r, background, world, lights, max_depth);
     //         }
     //         write_color(std::cout, pixel_color, samples_per_pixel);
     //     }
     // }
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(end - start);
 
-    // std::cerr << "\nDone.\n";
+    std::cerr << std::endl
+                  << "Time Cost:" << duration.count() << "s" << std::endl;
+
+    std::cerr << "\nDone.\n";
 }
 
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights) {
@@ -231,7 +230,7 @@ color ray_color(const ray &r, const color &background, const hittable &world, sh
     }
 }
 
-color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights, int depth) {
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {
     struct hit_record rec;
     // 如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
     if (depth <= 0)
@@ -373,20 +372,29 @@ hittable_list cornell_box() {
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    //方块的材质改为金属材质
-    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
-    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), aluminum);
+
+    //粗糙材质
+    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
     objects.add(box1);
 
-    // //添加一个玻璃球
-    // auto glass = make_shared<dielectric>(1.5);
-    // objects.add(make_shared<sphere>(pointf3(190, 90, 190), 90, glass));
-    shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
-    objects.add(box2);
+    // shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
+    // box2 = make_shared<rotate_y>(box2, -18);
+    // box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
+    // objects.add(box2);
+
+    //金属材质
+    // shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    // shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), aluminum);
+    // box1 = make_shared<rotate_y>(box1, 15);
+    // box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
+    // objects.add(box1);
+
+    //添加一个玻璃球
+    auto glass = make_shared<dielectric>(1.5);
+    objects.add(make_shared<sphere>(pointf3(190, 90, 190), 90, glass));
+
     return objects;
 }
 hittable_list cornell_smoke() {

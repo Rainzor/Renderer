@@ -2,6 +2,7 @@
 #define HITTABLE_H
 #include "rtweekend.h"
 #include "aabb.h"
+#include "onb.h"
 class material;  // alert the compiler that the pointer is to a class
 
 //hit_record:记录光线与物体的交点信息，包含交点坐标，法向量，光线参数t，是否正面朝向，交点材质
@@ -22,12 +23,19 @@ struct hit_record {
 class hittable {
    public:
 
-   //给定一条光线，判断是否与物体相交，若相交，将修改hit_record
-   //t_min和t_max是光线可以遍历的参数范围，只判断在这个范围内的交点
+    /*  hit:
+    
+        给定一条光线，判断是否与该物体相交，若相交，将修改hit_record
+
+        t_min和t_max是光线可以遍历的参数范围，只判断在这个范围内的交点
+
+        不考虑物体的前后遮挡关系，只考虑是否相交
+    */
     virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
     
     //返回物体的包围盒 output_box. bool值表示是否有包围盒 比如无限大平面就没有
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
+    
     //输入光线的起始点o和方向v，返回光线与物体相交点的pdf值
     virtual double pdf_value(const pointf3& o, const vecf3& v) const {
         return 0.0;

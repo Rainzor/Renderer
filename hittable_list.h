@@ -17,8 +17,12 @@ class hittable_list:public hittable{
         void clear() { objects.clear(); }
         void add(shared_ptr<hittable> object) { objects.push_back(object); }
 
+        //寻找与光线相交的最近的物体交点
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
         virtual bool bounding_box(double time0, double time1, aabb& output_box) const override;
+
+        virtual double pdf_value(const vecf3 &o, const vecf3 &v) const override;
+        virtual vecf3 random(const vecf3 &o) const override;
 
        public:
         // 采用共享指针指向hittable对象，这样可以避免对象的拷贝，提高效率
@@ -53,5 +57,19 @@ bool hittable_list::bounding_box(double time0, double time1, aabb&ouput_box)cons
     }
     return true;
 }
+
+double hittable_list::pdf_value(const vecf3 &o, const vecf3 &v) const {
+    auto weight = 1.0 / objects.size();
+    auto sum = 0.0;
+    for (const auto& object : objects)
+        sum += weight * object->pdf_value(o, v);
+    return sum;
+}
+
+vecf3 hittable_list::random(const vecf3 &o) const {
+    auto int_size = static_cast<int>(objects.size());
+    return objects[random_int(0, int_size - 1)]->random(o);
+}
+
 
 #endif

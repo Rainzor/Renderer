@@ -6,6 +6,7 @@
 #include <memory>
 #include <random>
 #include <cmath>
+
 //添加一些常用的变量、常数、函数和头文件
 
 // Usings
@@ -49,6 +50,8 @@ inline double clamp(double x, double min, double max) {
 
 // Common Headers
 
-#include "ray.h"
 #include "vec3.h"
+#include "ray.h"
+
+
 #endif

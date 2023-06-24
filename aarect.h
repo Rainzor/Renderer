@@ -137,6 +137,7 @@ class yz_rect : public hittable {//法向量为(1,0,0)
 
         virtual double pdf_value(const pointf3& o, const vecf3& v) const override {
             hit_record rec;
+            //寻找交点
             if (!this->hit(ray(o, v), 0.001, infinity, rec))
                 return 0;
 

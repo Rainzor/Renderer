@@ -7,8 +7,9 @@ class pdf {
 public:
     virtual ~pdf() {
     }
-
+    //根据出射方向计算pdf值
     virtual double value(const vecf3 &direction) const = 0;
+    //返回采样光线方向
     virtual vecf3 generate() const = 0;
 };
 class cosin_pdf : public pdf {

@@ -7,6 +7,20 @@
 #include "onb.h"
 #include "pdf.h"
 
+/*
+Scatter_record结构体用来记录材料的散射信息，包括：
+1. 散射光线
+2. 是否为镜面反射
+3. 吸收系数
+4. 采样出射方向时的概率密度函数类，它也可以用来采样散射方向
+*/
+struct scatter_record {
+    ray specular_ray;
+    bool is_specular;
+    color attenuation;
+    shared_ptr<pdf> pdf_ptr;
+};
+
 /* Material类是一个抽象类，它的子类有lambertian，metal，dielectric，diffuse_light
    它主要用来决定光线的散射方向和吸收系数
 */
@@ -17,13 +31,11 @@ public:
         const ray &r_in, const hit_record &rec, double u, double v, const pointf3 &p) const {
         return color(0, 0, 0);
     }
-    // 不同的材料对光线有不同的散射方程和颜色吸收系数
+    // 不同的材料对光线有不同的散射方程和颜色吸收系数, 二者组成了BRDF
     virtual bool scatter(
         const ray &r_in,
         const hit_record &rec, // 击中点
-        color &alb,            // 衰减系数,对不同的颜色吸收不一样，则物体展现出不同的颜色
-        ray &scattered,        // 散射光方向
-        double &pdf            // 采样时的概率密度函数
+        scatter_record &srec // 散射记录
     ) const {
         return false;
     }
@@ -48,20 +60,11 @@ public:
     virtual bool scatter(
         const ray &r_in,
         const hit_record &rec,
-        color &alb,
-        ray &scattered,
-        double &pdf) const override {
-        onb uvw;
-        uvw.build_from_w(rec.normal);
-        auto direction = uvw.local(random_cosine_direction());
-        // auto scatter_direction = rec.normal + random_unit_vector();
-        // Catch degenerate scatter direction
-        if (direction.near_zero())
-            direction = rec.normal;
-        scattered = ray(
-            rec.p, unit_vector(direction), r_in.time()); // 光速很快，可以认为光线在同一时刻发出，所以在一个光线弹射时为固定时刻
-        alb = albedo->value(rec.u, rec.v, rec.p);        // 根据击中点的纹理坐标和坐标，从纹理类中获取当前的纹理颜色
-        pdf = dot(uvw.w(), scattered.direction()) / pi;  // pdf为cosθ/π
+        scatter_record &srec
+        ) const override {
+        srec.is_specular = false;
+        srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
+        srec.pdf_ptr = make_shared<cosin_pdf>(rec.normal);
         return true;
     }
 
@@ -82,16 +85,17 @@ public:
     metal(const color &a, double f) :
         albedo(a), fuzz(f < 1 ? f : 1) {
     }
-    virtual bool scatter( // 输出吸收系数和散射方向
+    virtual bool scatter( 
         const ray &r_in,
         const hit_record &rec,
-        color &alb,
-        ray &scattered,
-        double &pdf) const override {
+        scatter_record &srec
+        ) const override {
         vecf3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
-        alb = albedo;
-        return (dot(scattered.direction(), rec.normal) > 0);
+        srec.specular_ray = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
+        srec.attenuation = albedo;
+        srec.is_specular = true;
+        srec.pdf_ptr = nullptr;
+        return true;
     }
 
 public:
@@ -109,21 +113,22 @@ public:
     virtual bool scatter(
         const ray &r_in,
         const hit_record &rec,
-        color &alb,
-        ray &scattered,
-        double &pdf) const override {
-        alb = color(1.0, 1.0, 1.0);                                                       // 透明
-        double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;                       // 判断是进入还是离开物体
+        scatter_record &srec
+        ) const override {
+        srec.attenuation = color(1.0, 1.0, 1.0); // 透明
+        srec.is_specular = true;
+        srec.pdf_ptr = nullptr;
+        double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;  // 判断是进入还是离开物体
         vecf3 unit_direction = unit_vector(r_in.direction());
-        double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);                   // cosθ
-        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);                             // sinθ
-        bool cannot_refract = refraction_ratio * sin_theta > 1.0;                         // 不能折射
+        double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);  // cosθ
+        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);   // sinθ
+        bool cannot_refract = refraction_ratio * sin_theta > 1.0;// 不能折射
         vecf3 direction;
         if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) // 不能折射
             direction = reflect(unit_direction, rec.normal);
         else
             direction = refract(unit_direction, rec.normal, refraction_ratio);
-        scattered = ray(rec.p, direction, r_in.time());
+        srec.specular_ray = ray(rec.p, direction, r_in.time());
         return true;
     }
 
@@ -152,9 +157,8 @@ public:
     virtual bool scatter(
         const ray &r_in,
         const hit_record &rec,
-        color &alb,
-        ray &scattered,
-        double &pdf) const override {
+        scatter_record &srec
+        ) const override {
         return false;
     }
 
@@ -182,12 +186,11 @@ public:
     virtual bool scatter(
         const ray &r_in,
         const hit_record &rec,
-        color &alb,
-        ray &scattered,
-        double &pdf) const override {
+        scatter_record &srec
+        ) const override {
         // 散射方向为随机的单位球内的随机点，保持散射方向的各向同性
-        scattered = ray(rec.p, random_in_unit_sphere(), r_in.time());
-        alb = albedo->value(rec.u, rec.v, rec.p);
+        srec.specular_ray = ray(rec.p, random_in_unit_sphere(), r_in.time());
+        srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
 

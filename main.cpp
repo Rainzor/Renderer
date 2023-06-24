@@ -17,7 +17,7 @@
 
 #define NUM_THREADS 8 // 线程数
 
-color ray_color(const ray &r, const color &background, const hittable &world);
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights);
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights, int depth);
 hittable_list random_scene();
 hittable_list two_spheres();
@@ -93,10 +93,12 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 100;
+        samples_per_pixel = 256;
         background = color(0, 0, 0);
-        //lights = make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light_material));
         lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
+        //lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
+        //加入一个球面光源
+        //lights->add(make_shared<sphere>(pointf3(190, 90, 190), 90, shared_ptr<material>()));
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
         vfov = 40.0;
@@ -198,28 +200,34 @@ int main() {
     // std::cerr << "\nDone.\n";
 }
 
-color ray_color(const ray &r, const color &background, const hittable &world) {
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights) {
     struct hit_record rec;
     float p_RR = 0.95;                        // 概率反射系数
 
     if (!world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
         return background;
 
-    ray scattered;
-    color attenuation; // 吸收系数,相交处的颜色的吸收
-    double pdf;
-    color albedo;
+    struct scatter_record srec;
     //除了光源以外，自发光emitted都是黑色的(0,0,0)
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
-    if (rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf)) { // 如果是可以反射的材料
-        if (random_double() < p_RR)
-            return emitted + attenuation 
-                            * rec.mat_ptr->scattering_pdf(r, rec, scattered) 
-                            * ray_color(scattered, background, world) / (p_RR * pdf);
-        else
-            return color(0, 0, 0); // 递归到一定深度后，返回黑色（在之后应该改为直接光照的颜色）
-    } else {                       // 否则，光线追踪到光源处，返回发射光线的颜色（光源）递归结束
+
+    if (!rec.mat_ptr->scatter(r, rec, srec)){
         return emitted;
+    }
+    if (random_double() < p_RR) {
+        if (srec.is_specular) {
+            return srec.attenuation * ray_color(srec.specular_ray, background, world,lights)/p_RR;
+        }
+        auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
+        mixture_pdf mixed_pdf(light_pdf_ptr, srec.pdf_ptr);
+
+        ray scattered = ray(rec.p, mixed_pdf.generate(), r.time());
+        double pdf_val = mixed_pdf.value(scattered.direction());
+        return emitted + 
+                srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
+                 ray_color(scattered, background, world, lights) / (pdf_val*p_RR);
+    } else {
+        return color(0, 0, 0);
     }
 }
 
@@ -233,37 +241,27 @@ color ray_color(const ray &r, const color &background, const hittable &world, sh
     if (!world.hit(r, 0.001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
         return background;
 
-    ray scattered;
-    color attenuation; // 吸收系数,相交处的颜色的吸收
-    color albedo;
+    struct scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
-    double pdf_val;
-
-    //这里的是按照scattering_pdf来采样scattered ray的
-    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf_val)) // 如果是可以反射的材料
+    //这里的是按照scattering_pdf来采样scattered ray的，记录在srec中
+    //对于diffuse material,scattering_pdf是cosine_pdf
+    if (!rec.mat_ptr->scatter(r, rec, srec))
         // 光线追踪到光源处，返回发射光线的颜色（光源）递归结束
         return emitted;
 
-    // 采样光源
-    // hittable_pdf plight(lights, rec.p);
-    // scattered = ray(rec.p, plight.generate(), r.time());
-    // pdf_val = plight.value(scattered.direction());
+    //特殊处理镜面反射材料
+    if (srec.is_specular) {
+        return srec.attenuation * ray_color(srec.specular_ray, background, world, lights, depth - 1);
+    }
 
-    // cos采样
-    // cosin_pdf p(rec.normal);
-    // scattered = ray(rec.p, p.generate(), r.time());
-    // pdf_val = p.value(scattered.direction());
+    auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
+    mixture_pdf mixed_pdf(light_pdf_ptr, srec.pdf_ptr);
 
-    // 混合采样
-    auto p0 = make_shared<cosin_pdf>(rec.normal);
-    auto p1 = make_shared<hittable_pdf>(lights, rec.p);
-    mixture_pdf mixed_pdf(p0, p1);
-
-    scattered = ray(rec.p, mixed_pdf.generate(), r.time());
-    pdf_val = mixed_pdf.value(scattered.direction());
+    ray scattered = ray(rec.p, mixed_pdf.generate(), r.time());
+    double pdf_val = mixed_pdf.value(scattered.direction());
 
     return emitted + 
-            albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
+            srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
             ray_color(scattered, background, world,lights, depth - 1) / pdf_val;
 }
 
@@ -374,11 +372,17 @@ hittable_list cornell_box() {
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
-    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
+
+    //方块的材质改为金属材质
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), aluminum);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
     objects.add(box1);
 
+    // //添加一个玻璃球
+    // auto glass = make_shared<dielectric>(1.5);
+    // objects.add(make_shared<sphere>(pointf3(190, 90, 190), 90, glass));
     shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
     box2 = make_shared<rotate_y>(box2, -18);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));

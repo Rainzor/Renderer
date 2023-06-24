@@ -61,6 +61,8 @@ class image_texture:public texture{//从已给图片中获取纹理
         image_texture(const char* filename){
             auto components_per_pixel = bytes_per_pixel;
             //stb读取文件，以char形式存储
+            //输入的是文件名，宽、高、通道数
+            //最后一个参数是指定通道数，因为我们只用了RGB三个通道，所以是3；如果0，就是用图片的通道数
             data = stbi_load(filename, &width, &height, &components_per_pixel, components_per_pixel);
 
             if(!data){
@@ -81,7 +83,7 @@ class image_texture:public texture{//从已给图片中获取纹理
                 return color(0,1,1);
             }
 
-            //clamp input texture coordinates to [0,1] x [1,0]
+            //clamp input texture coordinates to [0,1] x [0,1]
             u = clamp(u, 0.0, 1.0);
             v = 1.0 - clamp(v, 0.0, 1.0);//flip v to image coordinates:因为图像的坐标系是从上到下的，而纹理坐标是从下到上的
 

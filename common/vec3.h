@@ -165,75 +165,7 @@ using color = vecf3;  // RGB color
 using rgbf = color;
 using vecd3 = vec3<double>; // double type
 using pointd3 = point3<double>;
-vecf3 random_in_unit_sphere() {
-    while (true) {
-            auto p = vecf3::random(-1, 1);
-            if (p.length_squared() >= 1)
-                continue;
-            return p;
-    }
-}
-vecf3 random_in_unit_hemisphere(const vecf3& normal) {
-    vecf3 in_unit_sphere = random_in_unit_sphere();
-    if (dot(in_unit_sphere, normal) > 0.0)  // In the same hemisphere as the normal
-            return in_unit_sphere;
-    else
-            return -in_unit_sphere;
-}
-vecf3 random_on_unit_sphere() {
-    while (true) {
-        float u = random_double()*2-1;
-        float v = random_double()*2-1;
-        float r2 = u * u + v * v;
-        if (r2 >= 1)
-            continue;
-        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), 1-2*r2);
-    }
-}
-vecf3 random_unit_vector(){
-    // return unit_vector(random_in_unit_sphere());
-    return random_on_unit_sphere();
-}
 
-vecf3 random_in_unit_disk() {
-    while (true) {
-        auto p = vecf3(random_double(-1, 1), random_double(-1, 1), 0);
-        if (p.length_squared() >= 1)
-            continue;
-        return p;
-    }
-}
-
-vecf3 random_on_unit_hemisphere() {
-    while (true) {
-        float u = random_double()*2-1;
-        float v = random_double()*2-1;
-        float r2 = u * u + v * v;
-        if (r2 >= 1)
-            continue;
-        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), abs(1-2*r2));
-    }
-}
-vecf3 random_on_unit_hemisphere(const vecf3& normal) {
-    //构造在normal方向上的半球面上的随机向量
-
-    // 1. 构造正交基，并将随机向量转换到世界坐标系下
-    vecf3 local_up = abs(normal.y()) < 0.999 ? vecf3(0, 1, 0) : vecf3(1, 0, 0);
-    vecf3 local_w = unit_vector(normal);
-    vecf3 local_u = unit_vector(cross(local_w, local_up));
-    vecf3 local_v = cross(local_w, local_u);
-    vecf3 local_p = random_on_unit_hemisphere();
-
-    // 将随机向量从局部坐标系转换到世界坐标系
-    vecf3 world_p = local_p.x() * local_u + local_p.y() * local_v + local_p.z() * local_w;
-
-    // 2. 将随机向量旋转到 normal 的方向
-    if (dot(world_p, normal) < 0.0) {
-        world_p = -world_p;
-    }
-
-    return world_p;
-}
 
 vecf3 reflect(const vecf3& v, const vecf3& n) {//反射
     return v - 2 * dot(v, n) * n;

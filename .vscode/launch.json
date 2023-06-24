@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/CG/Rendering/src",
-      "program": "d:/CG/Rendering/src/build/Debug/outDebug",
+      "cwd": "d:/CG/Rendering/Renderer",
+      "program": "d:/CG/Rendering/Renderer/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

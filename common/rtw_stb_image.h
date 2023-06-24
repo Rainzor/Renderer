@@ -9,7 +9,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "external/stb_image.h"
-
+#define STB_IMAGE_WRITE_IMPLEMENTATION // include之前必须定义
+#include "external/stb_image_write.h"
 // Restore warning levels.
 #ifdef _MSC_VER
 // Microsoft Visual C++ Compiler

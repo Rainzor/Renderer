@@ -62,6 +62,7 @@ public:
         const hit_record &rec,
         scatter_record &srec
         ) const override {
+
         srec.is_specular = false;
         srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
         srec.pdf_ptr = make_shared<cosin_pdf>(rec.normal);
@@ -90,6 +91,7 @@ public:
         const hit_record &rec,
         scatter_record &srec
         ) const override {
+
         vecf3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         srec.specular_ray = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
         srec.attenuation = albedo;
@@ -115,6 +117,7 @@ public:
         const hit_record &rec,
         scatter_record &srec
         ) const override {
+
         srec.attenuation = color(1.0, 1.0, 1.0); // 透明
         srec.is_specular = true;
         srec.pdf_ptr = nullptr;

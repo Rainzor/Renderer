@@ -17,6 +17,8 @@
 
 #define NUM_THREADS 8 // 线程数
 
+std::string img_name="./img.png";
+
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights);
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth);
 hittable_list random_scene();
@@ -135,8 +137,9 @@ int main() {
     // Render
     std::vector<std::vector<color>> image(image_height, std::vector<color>(image_width, color(0, 0, 0))); // img
 
-    std::cout << "P3\n"
-              << image_width << ' ' << image_height << "\n255\n";
+    std::vector<color> img(image_height * image_width, color(0, 0, 0)); // img
+
+
     int i, j, k, s;
     double u, v;
     ray r;
@@ -144,7 +147,7 @@ int main() {
     auto start = high_resolution_clock::now();
     int sum = 0;
 
-#pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(image, sum) // OpenMP
+#pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(img, sum) // OpenMP
     for (k = 0; k < image_height * image_width; k++) {
         j = k / image_width;
         i = k % image_width;
@@ -157,7 +160,7 @@ int main() {
             r = cam.get_ray(u, v);
             pixel_color += ray_color(r, background, world,lights, max_depth);
         }
-        image[j][i] = pixel_color;
+        img[k] = pixel_color;
 #pragma omp critical
         {
             if (i == 0) {
@@ -168,11 +171,17 @@ int main() {
     }
 
     // 按顺序写入图片，结果导出到 .ppm 格式文件中
-    for (j = image_height - 1; j >= 0; j--) {
-        for (i = 0; i < image_width; i++) {
-            write_color(std::cout, image[j][i], samples_per_pixel); // 这里根据采样次数来计算平均颜色RGB
-        }
-    }
+    // std::cout << "P3\n"
+    //           << image_width << ' ' << image_height << "\n255\n";
+    // for (j = image_height - 1; j >= 0; j--) {
+    //     for (i = 0; i < image_width; i++) {
+    //         write_color(std::cout, img[j * image_width + i], samples_per_pixel);
+    //     }
+    // }
+
+    // 按顺序写入图片，结果导出到 .png 格式文件中
+    write_img(img_name.c_str(), image_width, image_height, img, samples_per_pixel);
+
 
     /*
     No Parallel

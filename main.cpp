@@ -17,7 +17,7 @@
 
 #define NUM_THREADS 8 // 线程数
 
-std::string img_name="./img.png";
+std::string img_name="./output/img.png";
 
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable> &lights);
 color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth);
@@ -182,7 +182,6 @@ int main() {
 
     // 按顺序写入图片，结果导出到 .png 格式文件中
     write_img(img_name.c_str(), image_width, image_height, img, samples_per_pixel);
-
 
     /*
     No Parallel

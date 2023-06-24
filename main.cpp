@@ -73,7 +73,7 @@ int main() {
             world = cornell_box();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 10;
+            samples_per_pixel = 128;
             background = color(0, 0, 0);
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
             lookfrom = pointf3(278, 278, -800);
@@ -183,22 +183,23 @@ int main() {
             }
         }
     }
+
+    //No Parallel
     /*
-    No Parallel
+     for (int j = image_height - 1; j >= 0; --j) {
+         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+         for (int i = 0; i < image_width; ++i) {
+             color pixel_color(0, 0, 0);
+             for (int s = 0; s < samples_per_pixel; ++s) {
+                 auto u = (i + random_double()) / (image_width - 1);
+                 auto v = (j + random_double()) / (image_height - 1);
+                 ray r = cam.get_ray(u, v);
+                 pixel_color += ray_color(r, background, world, lights, max_depth);
+             }
+             img[j * image_width + i] = pixel_color;
+         }
+     }
     */
-    // for (int j = image_height - 1; j >= 0; --j) {
-    //     std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-    //     for (int i = 0; i < image_width; ++i) {
-    //         color pixel_color(0, 0, 0);
-    //         for (int s = 0; s < samples_per_pixel; ++s) {
-    //             auto u = (i + random_double()) / (image_width - 1);
-    //             auto v = (j + random_double()) / (image_height - 1);
-    //             ray r = cam.get_ray(u, v);
-    //             pixel_color += ray_color(r, background, world, lights, max_depth);
-    //         }
-    //         img[j * image_width + i] = pixel_color;
-    //     }
-    // }
 
     // 按顺序写入图片，结果导出到 .png 格式文件中
     write_img(img_name.c_str(), image_width, image_height, img, samples_per_pixel);
@@ -213,36 +214,56 @@ int main() {
     std::cout << "Done.\n";
 }
 
-color
-ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {
+color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {
     struct hit_record rec;
     float p_RR = 0.95;                        // 概率反射系数
 
     if (!world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
         return background;
 
+    //srec 用于记录该材质的散射信息，包括衰减系数，散射光线方向分布，是否为镜面反射
     struct scatter_record srec;
+
     //除了光源以外，自发光emitted都是黑色的(0,0,0)
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
 
     if (!rec.mat_ptr->scatter(r, rec, srec)){
-        return emitted;
+        if(depth == 0)
+            return emitted;
+        else
+            return color(0, 0, 0);
     }
-    if (random_double() < p_RR) {
-        if (srec.is_specular) {
-            return srec.attenuation * ray_color(srec.specular_ray, background, world, lights, depth + 1) / p_RR;
-        }
-        auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
-        mixture_pdf mixed_pdf(light_pdf_ptr, srec.pdf_ptr);
+    if (random_double() > p_RR)
+        return color (0, 0, 0);
 
-        ray scattered = ray(rec.p, mixed_pdf.generate(), r.time());
-        double pdf_val = mixed_pdf.value(scattered.direction());
-        return emitted +
-               srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
-               ray_color(scattered, background, world, lights, depth + 1) / (pdf_val * p_RR);
-    } else {
-        return color(0, 0, 0);
+
+    if (srec.is_specular) {
+        return srec.attenuation * ray_color(srec.specular_ray, background, world, lights, depth + 1) / p_RR;
     }
+
+    //直接光照
+    color direct_light(0, 0, 0);
+    auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
+    pointf3 light_point = light_pdf_ptr->generate() + rec.p;
+    vecf3 light_direction = light_point - rec.p;
+    double distance_to_light = light_direction.length();
+    ray light_ray = ray(rec.p, light_direction, r.time());
+    struct hit_record rec_light;
+    world.hit(light_ray, 0.001, distance_to_light + 0.0001, rec_light);
+    //如果光线与光源相交则有光线，否则light_color为(0,0,0), 所以这里隐含了Visibility Test
+    color light_color = rec_light.mat_ptr->emitted(light_ray, rec_light, rec_light.u, rec_light.v, rec_light.p);
+    double dir_pdf = light_pdf_ptr->value(light_ray.direction());
+    direct_light =  srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, light_ray)
+                    * light_color / dir_pdf;
+
+    //间接光照
+    vecf3 scattered_direction = srec.pdf_ptr->generate();
+    ray scattered = ray(rec.p, scattered_direction, r.time());
+    double indir_pdf = srec.pdf_ptr->value(scattered_direction);
+    color indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered)
+                           * ray_color(scattered, background, world, lights, depth + 1)/indir_pdf;
+
+    return emitted + (direct_light + indirect_light)/p_RR;
 }
 
 //color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {

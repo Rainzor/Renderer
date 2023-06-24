@@ -48,7 +48,7 @@ int main() {
     pointf3 lookat;
     auto vfov = 40.0;    // 视野
     auto aperture = 0.0; // 光圈
-    color background(0, 0, 0);
+    color background;
     //auto light_material = make_shared<diffuse_light>(color(15, 15, 15));
     auto lights = make_shared<hittable_list>();
     switch (6) {         // 这种用法是为了方便调试，可以直接切换场景
@@ -110,6 +110,7 @@ int main() {
         aspect_ratio = 1.0;
         image_width = 600;
         samples_per_pixel = 200;
+        background = color(0, 0, 0);
         lookfrom = pointf3(278, 278, -800);
         lookat = pointf3(278, 278, 0);
         vfov = 40.0;
@@ -143,7 +144,7 @@ int main() {
     int i, j, k, s;
     double u, v;
     ray r;
-    color pixel_color, image_color;
+    color pixel_color;
     auto start = high_resolution_clock::now();
     int sum = 0;
 
@@ -153,7 +154,7 @@ int main() {
         i = k % image_width;
         // std::cerr << "\r(i,j): " << i << ' ' << j << std::flush;
         pixel_color = color(0, 0, 0);
-        for (s = 0, image_color = color(0, 0, 0); s < samples_per_pixel; s += 1) {
+        for (s = 0; s < samples_per_pixel; s += 1) {
             // 制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
             u = (i + random_double()) / (image_width - 1);
             v = (j + random_double()) / (image_height - 1);

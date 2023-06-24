@@ -2,7 +2,7 @@
 #define CAMERA_H
 
 #include "rtweekend.h"
-
+#include "pdf.h"
 class camera{
     public:
      camera(

@@ -93,7 +93,7 @@ int main() {
         world = cornell_box();
         aspect_ratio = 1.0;
         image_width = 600;
-        samples_per_pixel = 256;
+        samples_per_pixel = 10;
         background = color(0, 0, 0);
         //lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
         lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));

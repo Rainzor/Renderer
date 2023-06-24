@@ -3,6 +3,98 @@
 #include "rtweekend.h"
 #include "onb.h"
 #include "hittable.h"
+
+inline vecf3 random_in_unit_sphere() {
+    while (true) {
+        auto p = vecf3::random(-1, 1);
+        if (p.length_squared() >= 1)
+            continue;
+        return p;
+    }
+}
+inline vecf3 random_in_unit_hemisphere(const vecf3 &normal) {
+    vecf3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+inline vecf3 random_on_unit_sphere() {
+    while (true) {
+        float u = random_double() * 2 - 1;
+        float v = random_double() * 2 - 1;
+        float r2 = u * u + v * v;
+        if (r2 >= 1)
+            continue;
+        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), 1 - 2 * r2);
+    }
+}
+inline vecf3 random_unit_vector() {
+    // return unit_vector(random_in_unit_sphere());
+    return random_on_unit_sphere();
+}
+
+inline vecf3 random_in_unit_disk() {
+    while (true) {
+        auto p = vecf3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() >= 1)
+            continue;
+        return p;
+    }
+}
+
+inline vecf3 random_on_unit_hemisphere() {
+    while (true) {
+        float u = random_double() * 2 - 1;
+        float v = random_double() * 2 - 1;
+        float r2 = u * u + v * v;
+        if (r2 >= 1)
+            continue;
+        return vecf3(2 * u * sqrt(1 - r2), 2 * v * sqrt(1 - r2), abs(1 - 2 * r2));
+    }
+}
+inline vecf3 random_on_unit_hemisphere(const vecf3 &normal) {
+    // 构造在normal方向上的半球面上的随机向量
+
+    // 1. 构造正交基，并将随机向量转换到世界坐标系下
+    vecf3 local_up = abs(normal.y()) < 0.999 ? vecf3(0, 1, 0) : vecf3(1, 0, 0);
+    vecf3 local_w = unit_vector(normal);
+    vecf3 local_u = unit_vector(cross(local_w, local_up));
+    vecf3 local_v = cross(local_w, local_u);
+    vecf3 local_p = random_on_unit_hemisphere();
+
+    // 将随机向量从局部坐标系转换到世界坐标系
+    vecf3 world_p = local_p.x() * local_u + local_p.y() * local_v + local_p.z() * local_w;
+
+    // 2. 将随机向量旋转到 normal 的方向
+    if (dot(world_p, normal) < 0.0) {
+        world_p = -world_p;
+    }
+
+    return world_p;
+}
+
+inline vecf3 random_cosine_direction() {
+    float r1 = random_double();
+    float r2 = random_double();
+    float z = sqrt(1 - r2);
+    float phi = 2 * pi * r1;
+    float x = cos(phi) * sqrt(r2);
+    float y = sin(phi) * sqrt(r2);
+    return vecf3(x, y, z);
+}
+inline vecf3 random_to_sphere(double radius, double distance_squared) {
+    auto r1 = random_double();
+    auto r2 = random_double();
+    auto z = 1 + r2 * (sqrt(1 - radius * radius / distance_squared) - 1);
+
+    auto phi = 2 * pi * r1;
+    auto x = cos(phi) * sqrt(1 - z * z);
+    auto y = sin(phi) * sqrt(1 - z * z);
+
+    return vecf3(x, y, z);
+}
+
 class pdf {
 public:
     virtual ~pdf() {
@@ -69,17 +161,6 @@ public:
 };
 
 
-inline vecf3 random_to_sphere(double radius, double distance_squared) {
-    auto r1 = random_double();
-    auto r2 = random_double();
-    auto z = 1 + r2 * (sqrt(1 - radius * radius / distance_squared) - 1);
-
-    auto phi = 2 * pi * r1;
-    auto x = cos(phi) * sqrt(1 - z * z);
-    auto y = sin(phi) * sqrt(1 - z * z);
-
-    return vecf3(x, y, z);
-}
 
 
 

@@ -18,10 +18,25 @@
 #define NUM_THREADS 8 // 线程数
 
 std::string img_name = "./output/img.png";
+int max_depth = 50;
 
-//color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights);
-color
-ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth);
+typedef struct Scene{
+    color background;
+    hittable_list world;
+    shared_ptr<hittable_list> lights;
+} Scene;
+
+color ray_color(const ray &r, const Scene &scene);
+
+color BRDF_ray_color(const ray &r, const Scene &scene);
+
+color MIX_ray_color(const ray &r, const Scene & scene);
+
+color NEE_ray_color(const ray &r, const Scene & scene, int depth,bool is_shadow= false);
+
+color MIS_ray_color(const ray &r, const Scene & scene,int depth, double emitted_weight,bool is_shadow= false);
+
+void balance_heuristic(double f_pdf, double g_pdf, double &weight_f, double &weight_g,int beta=1);
 
 bvh_node world2bvh_scene(hittable_list &world);
 
@@ -35,6 +50,7 @@ hittable_list cornell_smoke();
 
 hittable_list final_scene();
 
+
 int main() {
     using namespace std::chrono;
     // Parallel
@@ -43,7 +59,6 @@ int main() {
     // Image
     auto aspect_ratio = 3.0 / 2.0;
     int image_width = 400;
-    int max_depth = 50;
     int samples_per_pixel = 100;
     // World
     hittable_list world;
@@ -73,31 +88,33 @@ int main() {
             world = cornell_box();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 128;
+            samples_per_pixel = 512;
             background = color(0, 0, 0);
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
             lookfrom = pointf3(278, 278, -800);
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
             std::cout << "Cornell Box" << std::endl;
+            img_name = std::string("./output/cornell-box.png");
             break;
         case 2:
             world = cornell_specular();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 256;
+            samples_per_pixel = 512;
             background = color(0, 0, 0);
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
             lookfrom = pointf3(278, 278, -800);
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
             std::cout << "Cornell Specular Box" << std::endl;
+            img_name = std::string("./output/cornell-specular-box.png");
             break;
         case 3:
             world = cornell_glass();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 256;
+            samples_per_pixel = 512;
             background = color(0, 0, 0);
             //lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
@@ -106,7 +123,8 @@ int main() {
             lookfrom = pointf3(278, 278, -800);
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
-            std::cout << "Cornell Glass Box" << std::endl;
+            std::cout << "Cornell Glassy Box" << std::endl;
+            img_name = std::string("./output/cornell-glassy-box.png");
             break;
         case 4:
             world = cornell_smoke();
@@ -118,17 +136,20 @@ int main() {
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
             std::cout << "Cornell Smoke Box" << std::endl;
+            img_name = std::string("./output/cornell-smoke-box.png");
+
             break;
         case 5:
             world = final_scene();
             aspect_ratio = 1.0;
             image_width = 800;
-            samples_per_pixel = 10000;
+            samples_per_pixel = 256;
             background = color(0, 0, 0);
             lookfrom = pointf3(478, 278, -600);
             lookat = pointf3(278, 278, 0);
-            std::cout << "Final Scene" << std::endl;
             vfov = 40.0;
+            std::cout << "Final Scene" << std::endl;
+            img_name = std::string("./output/final-scene.png");
             break;
         default:
             world = cornell_box();
@@ -144,6 +165,9 @@ int main() {
             break;
     }
 
+    //Scene
+    Scene scene{background,world,lights};
+
     // Camera
     vecf3 vup(0, 1, 0);
     auto dist_to_focus = 10.0;
@@ -153,7 +177,6 @@ int main() {
 
     // Render
     std::vector<color> img(image_height * image_width, color(0, 0, 0)); // img
-
 
     int i, j, k, s;
     double u, v;
@@ -172,7 +195,7 @@ int main() {
             u = (i + random_double()) / (image_width - 1);
             v = (j + random_double()) / (image_height - 1);
             r = cam.get_ray(u, v);
-            pixel_color += ray_color(r, background, world, lights, 0);
+            pixel_color += ray_color(r, scene);
         }
         img[k] = pixel_color;
 #pragma omp critical
@@ -208,19 +231,113 @@ int main() {
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(end - start);
 
-    std::cout << std::endl
-              << "Time Cost:" << duration.count() << "s" << std::endl;
+    std::cout << std::endl << "Time Cost:"
+              << duration.count()/60 << "min"
+              << duration.count()%60 << "s" << std::endl;
     std::cout << "File output: " << img_name << std::endl;
     std::cout << "Done.\n";
 }
 
-color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {
+color ray_color(const ray &r, const Scene &scene){
+    color L(0,0,0);
+    switch (4) {
+        case 1:
+            L = BRDF_ray_color(r, scene);
+            break;
+        case 2:
+            L = MIX_ray_color(r, scene);
+            break;
+        case 3:
+            L = NEE_ray_color(r, scene, 0);
+            break;
+        case 4:
+            L = MIS_ray_color(r, scene,  0, 1);
+            break;
+        default:
+            L = BRDF_ray_color(r, scene);
+            break;
+    }
+    if(isnan(L.x())) L[0] = 0;
+    if(isnan(L.y())) L[1] = 0;
+    if(isnan(L.z())) L[2] = 0;
+    return L;
+}
+
+color BRDF_ray_color(const ray &r, const Scene &scene){
+    hit_record rec;
+
+    // If the ray hits nothing, return the background color.
+    if (!scene.world.hit(r, 0.001, infinity, rec))
+        return scene.background;
+
+    scatter_record srec;
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+
+    if (!rec.mat_ptr->scatter(r, rec, srec))
+        return emitted;
+
+    float p_RR = 0.9;     // 概率反射系数
+    if (random_double() > p_RR)
+        return color (0, 0, 0);
+
+    if (srec.is_specular) {
+        return srec.attenuation
+               * BRDF_ray_color(srec.specular_ray, scene)/p_RR;
+    }
+
+    auto light_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+    ray scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
+    auto pdf_val = srec.pdf_ptr->value(scatter_ray.direction());
+
+    return emitted
+           + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
+             * BRDF_ray_color(scatter_ray, scene)/p_RR/ pdf_val;
+}
+
+color MIX_ray_color(const ray &r, const Scene &scene){
+    hit_record rec;
+
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+//    if (depth <= 0)
+//        return color(0,0,0);
+
+    // If the ray hits nothing, return the background color.
+    if (!scene.world.hit(r, 0.001, infinity, rec))
+        return scene.background;
+
+    scatter_record srec;
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+
+    if (!rec.mat_ptr->scatter(r, rec, srec))
+        return emitted;
+
+    float p_RR = 0.9;     // 概率反射系数
+    if (random_double() > p_RR)
+        return color (0, 0, 0);
+
+    if (srec.is_specular) {
+        return srec.attenuation
+               * MIX_ray_color(srec.specular_ray, scene)/p_RR;
+    }
+
+    auto light_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+    mixture_pdf p(light_ptr, srec.pdf_ptr);
+    ray scatter_ray = ray(rec.p, p.generate(), r.time());
+    auto pdf_val = p.value(scatter_ray.direction());
+
+    return emitted
+           + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
+             * MIX_ray_color(scatter_ray, scene )
+             / pdf_val/p_RR;
+}
+
+color NEE_ray_color(const ray &r, const Scene &scene, int depth, bool is_shadow) {
+
     struct hit_record rec;
     float p_RR = 0.95;                        // 概率反射系数
 
-    if (!world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
-        return background;
-
+    if (!scene.world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
+        return scene.background;
     //srec 用于记录该材质的散射信息，包括衰减系数，散射光线方向分布，是否为镜面反射
     struct scatter_record srec;
 
@@ -228,7 +345,7 @@ color ray_color(const ray &r, const color &background, const hittable &world, sh
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
 
     if (!rec.mat_ptr->scatter(r, rec, srec)){
-        if(depth == 0)
+        if(is_shadow||depth == 0)
             return emitted;
         else
             return color(0, 0, 0);
@@ -236,69 +353,115 @@ color ray_color(const ray &r, const color &background, const hittable &world, sh
     if (random_double() > p_RR)
         return color (0, 0, 0);
 
-
     if (srec.is_specular) {
-        return srec.attenuation * ray_color(srec.specular_ray, background, world, lights, depth + 1) / p_RR;
+        return srec.attenuation * MIX_ray_color(srec.specular_ray, scene) / p_RR;
+    }
+
+    //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
+    if(is_shadow){
+        return color (0, 0, 0);
     }
 
     //直接光照
-    color direct_light(0, 0, 0);
-    auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
+    auto light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
     pointf3 light_point = light_pdf_ptr->generate() + rec.p;
     vecf3 light_direction = light_point - rec.p;
-    double distance_to_light = light_direction.length();
-    ray light_ray = ray(rec.p, light_direction, r.time());
-    struct hit_record rec_light;
-    world.hit(light_ray, 0.001, distance_to_light + 0.0001, rec_light);
+    ray shadow_ray = ray(rec.p, light_direction, r.time());
+    double p_dir = light_pdf_ptr->value(shadow_ray.direction());
+
     //如果光线与光源相交则有光线，否则light_color为(0,0,0), 所以这里隐含了Visibility Test
-    color light_color = rec_light.mat_ptr->emitted(light_ray, rec_light, rec_light.u, rec_light.v, rec_light.p);
-    double dir_pdf = light_pdf_ptr->value(light_ray.direction());
-    direct_light =  srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, light_ray)
-                    * light_color / dir_pdf;
+    color direct_light = srec.attenuation *rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
+                         * NEE_ray_color(shadow_ray,scene,depth + 1, true)/p_dir;
 
     //间接光照
     vecf3 scattered_direction = srec.pdf_ptr->generate();
-    ray scattered = ray(rec.p, scattered_direction, r.time());
-    double indir_pdf = srec.pdf_ptr->value(scattered_direction);
-    color indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered)
-                           * ray_color(scattered, background, world, lights, depth + 1)/indir_pdf;
+    ray scatter_ray = ray(rec.p, scattered_direction, r.time());
+    double p_indir = srec.pdf_ptr->value(scattered_direction);
+    color indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
+                           * NEE_ray_color(scatter_ray, scene, depth + 1)/p_indir;
 
-    return emitted + (direct_light + indirect_light)/p_RR;
+    return (direct_light + indirect_light)/p_RR;
 }
 
-//color ray_color(const ray &r, const color &background, const hittable &world, shared_ptr<hittable_list> &lights, int depth) {
-//    struct hit_record rec;
-//    // 如果递归深度达到最大值，则返回黑色,意味着光线已经衰减为0了
-//    if (depth <= 0)
-//        return color(0, 0, 0);
-//
-//    // 如果光线没有撞击到物体，则返回背景颜色
-//    if (!world.hit(r, 0.001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
-//        return background;
-//
-//    struct scatter_record srec;
-//    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
-//    //这里的是按照scattering_pdf来采样scattered ray的，记录在srec中
-//    //对于diffuse material,scattering_pdf是cosine_pdf
-//    if (!rec.mat_ptr->scatter(r, rec, srec))
-//        // 光线追踪到光源处，返回发射光线的颜色（光源）递归结束
-//        return emitted;
-//
-//    //特殊处理镜面反射材料
-//    if (srec.is_specular) {
-//        return srec.attenuation * ray_color(srec.specular_ray, background, world, lights, depth - 1);
-//    }
-//
-//    auto light_pdf_ptr = make_shared<hittable_pdf>(lights, rec.p);
-//    mixture_pdf mixed_pdf(light_pdf_ptr, srec.pdf_ptr);
-//
-//    ray scattered = ray(rec.p, mixed_pdf.generate(), r.time());
-//    double pdf_val = mixed_pdf.value(scattered.direction());
-//
-//    return emitted +
-//            srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered) *
-//            ray_color(scattered, background, world,lights, depth - 1) / pdf_val;
-//}
+color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_weight,bool is_shadow) {
+    if(depth>=max_depth)
+        return color(0,0,0);
+    struct hit_record rec;
+    if (!scene.world.hit(r, 0.001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
+        return scene.background*emitted_weight;
+
+    //srec 用于记录该材质的散射信息，包括衰减系数，散射光线方向分布，是否为镜面反射
+    struct scatter_record srec;
+    //如果光线追踪到光源，则返回光源的颜色
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p); // 发射光线的颜色
+    if(!rec.mat_ptr->scatter(r, rec, srec)) {
+        return emitted * emitted_weight;
+    }
+
+    //Russia Rotate
+    float p_RR = 0.9;     // 概率反射系数
+    if (random_double() > p_RR)
+        return color (0, 0, 0);
+
+    //如果是镜面反射，直接返回镜面反射的颜色，不依赖于光源
+    if(srec.is_specular){
+//        return srec.attenuation * MIX_ray_color(srec.specular_ray, scene)/p_RR*emitted_weight;
+        return srec.attenuation * MIS_ray_color(srec.specular_ray, scene, depth + 1, emitted_weight, is_shadow)/p_RR;
+    }
+    //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
+    if(is_shadow){
+        return color (0, 0, 0);
+    }
+
+    double mis_brdf_sample, mis_light_sample;
+    shared_ptr<hittable_pdf> light_pdf_ptr;
+    pointf3 light_point;
+    vecf3 light_direction;
+    ray shadow_ray,scatter_ray;
+    double p_dir, p_indir;
+    color direct_light, indirect_light;
+    //处理一般渲染
+    if(rec.mat_ptr->type != material_type::Isotropic){
+        //直接光照
+        light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+        light_point = light_pdf_ptr->generate() + rec.p;
+        light_direction = light_point - rec.p;
+        shadow_ray = ray(rec.p, light_direction, r.time());
+        p_dir = light_pdf_ptr->value(shadow_ray.direction());
+        //间接光照
+        scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
+        p_indir = srec.pdf_ptr->value(scatter_ray.direction());
+
+        //启发式平衡函数，这正是MIS的权重函数
+        balance_heuristic(p_indir, p_dir, mis_brdf_sample, mis_light_sample, 1);
+
+        direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
+                             * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
+        indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
+                               * MIS_ray_color(scatter_ray, scene,depth+1, mis_brdf_sample) / p_indir;
+        return emitted + (direct_light + indirect_light) / p_RR;
+    }
+
+    //处理体渲染
+    light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+    light_direction = light_pdf_ptr->generate();
+    light_point = light_direction + rec.p;
+    shadow_ray = ray(rec.p, light_direction, r.time());
+    hit_record light_rec;
+    if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, light_rec)) {//光源已在包围盒之外
+        ;
+    }
+
+}
+
+void balance_heuristic(double f_pdf, double g_pdf, double &weight_f, double &weight_g, int beta){
+    if(beta!=1) {
+        f_pdf = pow(f_pdf, beta);
+        g_pdf = pow(g_pdf, beta);
+    }
+    weight_f = f_pdf / (f_pdf + g_pdf);
+    weight_g = g_pdf / (f_pdf + g_pdf);
+}
 
 bvh_node world2bvh_scene(hittable_list &world) {
     bvh_node objs(world, 0, 1);

@@ -8,18 +8,23 @@
 #include "pdf.h"
 
 /*
-Scatter_record结构体用来记录材料的散射信息，包括：
-1. 散射光线
-2. 是否为镜面反射
-3. 吸收系数
-4. 采样出射方向时的概率密度函数类，它也可以用来采样散射方向
+Scatter_record结构体用来记录材料的散射信息
 */
 struct scatter_record {
-    ray specular_ray;
-    bool is_specular;
-    color attenuation;
-    shared_ptr<pdf> pdf_ptr;
+    ray specular_ray;//散射光线
+    bool is_specular;//是否为镜面反射
+    color attenuation;//材质的吸收系数
+    shared_ptr<pdf> pdf_ptr;//散射光线的概率分布函数
 };
+
+enum class material_type {
+    Lambertian,
+    Metal,
+    Glass,
+    Light,
+    Isotropic
+};
+
 
 /* Material类是一个抽象类，它的子类有lambertian，metal，dielectric，diffuse_light
    它主要用来决定光线的散射方向和吸收系数
@@ -39,13 +44,15 @@ public:
     ) const {
         return false;
     }
-
-    virtual double scattering_pdf( // 返回散射光方向的概率密度函数
+    // 返回该材质散射光方向的概率密度函数，代表了BRDF的一项
+    virtual double scattering_pdf(
         const ray &r_in,
         const hit_record &rec,
         const ray &scattered) const {
         return 0;
     }
+public:
+    material_type type;
 };
 // 漫反射粗糙材质
 class lambertian : public material {
@@ -69,6 +76,7 @@ public:
         return true;
     }
 
+
     double scattering_pdf(
         const ray &r_in,
         const hit_record &rec,
@@ -79,6 +87,7 @@ public:
 
 public:
     shared_ptr<texture> albedo;
+    material_type type = material_type::Lambertian;
 };
 // 反射金属材质
 class metal : public material {
@@ -103,6 +112,7 @@ public:
 public:
     color albedo;
     double fuzz;
+    material_type type = material_type::Metal;
 };
 
 // 折射透明材质
@@ -127,9 +137,10 @@ public:
         double sin_theta = sqrt(1.0 - cos_theta * cos_theta);   // sinθ
         bool cannot_refract = refraction_ratio * sin_theta > 1.0;// 不能折射
         vecf3 direction;
-        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) // 不能折射
+        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
+            //不能折射
             direction = reflect(unit_direction, rec.normal);
-        else
+        else// 可以折射
             direction = refract(unit_direction, rec.normal, refraction_ratio);
         srec.specular_ray = ray(rec.p, direction, r_in.time());
         return true;
@@ -145,6 +156,7 @@ private:
 
 public:
     double ir; // 折射率
+    material_type type = material_type::Glass;
 };
 
 // 自发光材质
@@ -174,6 +186,7 @@ public:
 
 public:
     shared_ptr<texture> emit;
+    material_type type = material_type::Light;
 };
 
 // 各向同性的散射材质
@@ -199,6 +212,7 @@ public:
 
 public:
     shared_ptr<texture> albedo;
+    material_type type = material_type::Isotropic;
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include "aabb.h"
 #include "onb.h"
 class material;  // alert the compiler that the pointer is to a class
-
+class hittable;
 //hit_record:记录光线与物体的交点信息，包含交点坐标，法向量，光线参数t，是否正面朝向，交点材质
 struct hit_record {
     pointf3 p;//交点世界坐标
@@ -13,7 +13,7 @@ struct hit_record {
     double u,v;//纹理坐标
     bool front_face;//是否正面朝向
     shared_ptr<material> mat_ptr;//交点材质
-
+    shared_ptr<hittable> boundary_ptr;//交点物体的边界
     inline void set_face_normal(const ray& r_in, const vecf3& outward_normal) {
         front_face = dot(r_in.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
@@ -37,6 +37,7 @@ class hittable {
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
     
     //输入光线的起始点o和方向v，返回光线与物体相交点的pdf值
+    //它表示从物体表面采样的概率密度函数
     virtual double pdf_value(const pointf3& o, const vecf3& v) const {
         return 0.0;
     }
@@ -44,8 +45,6 @@ class hittable {
     virtual vecf3 random(const vecf3& o) const {
         return vecf3(1, 0, 0);
     }
-
-
 };
 
 
@@ -196,6 +195,7 @@ class flip_face : public hittable {
 
    public:
     shared_ptr<hittable> ptr;
+
 };
 
 #endif

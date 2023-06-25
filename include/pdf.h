@@ -111,7 +111,7 @@ public:
     }
 
     virtual double value(const vecf3 &direction) const override {
-        auto cosine = dot(unit_vector(direction), uvw.w());
+        auto cosine = dot(uvw.w(),unit_vector(direction));
         return (cosine <= 0) ? 0 : cosine / pi;
     }
 

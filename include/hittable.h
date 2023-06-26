@@ -45,6 +45,11 @@ class hittable {
     virtual vecf3 random(const vecf3& o) const {
         return vecf3(1, 0, 0);
     }
+
+    virtual void getMaterial(shared_ptr<material>& mptr) const{
+        return;
+    }
+
 };
 
 
@@ -57,6 +62,10 @@ class translate: public hittable {
     virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
 
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const override;
+
+    virtual void getMaterial(shared_ptr<material>& mptr) const override{
+         ptr->getMaterial(mptr);
+    }
 
    public:
     shared_ptr<hittable> ptr;
@@ -100,7 +109,9 @@ class rotate_y : public hittable {
         output_box = bbox;
         return hasbox;
     }
-
+    virtual void getMaterial(shared_ptr<material>& mptr) const override{
+        ptr->getMaterial(mptr);
+    }
    public:
     shared_ptr<hittable> ptr;
     double sin_theta;
@@ -192,7 +203,9 @@ class flip_face : public hittable {
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
         return ptr->bounding_box(time0, time1, output_box);
     }
-
+    virtual void getMaterial(shared_ptr<material>& mptr) const override{
+        ptr->getMaterial(mptr);
+    }
    public:
     shared_ptr<hittable> ptr;
 

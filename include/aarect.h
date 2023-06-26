@@ -37,7 +37,9 @@ class xy_rect : public hittable {//法向量为(0,0,1)
             auto random_point = pointf3(random_double(x0, x1), random_double(y0, y1), k);
             return random_point - o;
         }
-
+        virtual void getMaterial(shared_ptr<material>& mptr) const override{
+            mptr = mp;
+        }
     public:
         double x0, x1, y0, y1, k;
         shared_ptr<material> mp;
@@ -96,7 +98,9 @@ class xz_rect : public hittable {//法向量为(0,1,0)
             auto random_point = pointf3(random_double(x0, x1), k, random_double(z0, z1));
             return random_point - o;
         }
-
+        virtual void getMaterial(shared_ptr<material>& mptr) const override{
+            mptr = mp;
+        }
        public:
         double x0, x1, z0, z1, k;
         shared_ptr<material> mp;
@@ -152,7 +156,9 @@ class yz_rect : public hittable {//法向量为(1,0,0)
             auto random_point = pointf3(k, random_double(y0, y1), random_double(z0, z1));
             return random_point - o;
         }
-
+        virtual void getMaterial(shared_ptr<material>& mptr) const override{
+            mptr = mp;
+        }
        public:
         double y0, y1, z0, z1, k;
         shared_ptr<material> mp;

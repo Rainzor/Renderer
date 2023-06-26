@@ -20,6 +20,9 @@ class moving_sphere: public hittable {
 
         pointf3 center(double time) const;
 
+        virtual void getMaterial(shared_ptr<material>& mptr) const override{
+            mptr = mat_ptr;
+        }
     public:
         pointf3 center0, center1;
         double time0, time1;

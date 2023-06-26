@@ -29,7 +29,9 @@ class constant_medium : public hittable {
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
         return boundary->bounding_box(time0, time1, output_box);
     }
-
+    virtual void getMaterial(shared_ptr<material>& mptr) const override{
+        mptr = phase_function;
+    }
    public:
     shared_ptr<hittable> boundary;
     double neg_inv_density;

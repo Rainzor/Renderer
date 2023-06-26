@@ -114,7 +114,7 @@ int main() {
             world = cornell_glass();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 512;
+            samples_per_pixel = 32;
             background = color(0, 0, 0);
             //lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
@@ -384,6 +384,13 @@ color NEE_ray_color(const ray &r, const Scene &scene, int depth, bool is_shadow)
 }
 
 color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_weight,bool is_shadow) {
+
+    //TODO:添加光源采样概率为0的判断
+    //TODO:为入射到Glass的shadow ray 删去采样过的直接光成分
+    //TODO:处理体渲染渲染内容
+    //TODO:处理三角形面片
+
+
     if(depth>=max_depth)
         return color(0,0,0);
     struct hit_record rec;
@@ -406,7 +413,7 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     //如果是镜面反射，直接返回镜面反射的颜色，不依赖于光源
     if(srec.is_specular){
 //        return srec.attenuation * MIX_ray_color(srec.specular_ray, scene)/p_RR*emitted_weight;
-        return srec.attenuation * MIS_ray_color(srec.specular_ray, scene, depth + 1, emitted_weight, is_shadow)/p_RR;
+        return srec.attenuation * MIS_ray_color(srec.specular_ray, scene, depth + 1, emitted_weight)/p_RR;
     }
     //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
     if(is_shadow){
@@ -451,7 +458,6 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, light_rec)) {//光源已在包围盒之外
         ;
     }
-
 }
 
 void balance_heuristic(double f_pdf, double g_pdf, double &weight_f, double &weight_g, int beta){

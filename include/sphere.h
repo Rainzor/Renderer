@@ -17,6 +17,10 @@ class sphere : public hittable {
         //按立体角均匀采样
         virtual vecf3 random(const vecf3& o) const override;
 
+        virtual void getMaterial(shared_ptr<material>& mptr) const override{
+            mptr = mat_ptr;
+        }
+
     public:
         pointf3 center;//球心
         float radius;//半径

@@ -101,7 +101,7 @@ int main() {
             world = cornell_specular();
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 512;
+            samples_per_pixel = 32;
             background = color(0, 0, 0);
             lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
             lookfrom = pointf3(278, 278, -800);
@@ -354,7 +354,7 @@ color NEE_ray_color(const ray &r, const Scene &scene, int depth, bool is_shadow)
         return color (0, 0, 0);
 
     if (srec.is_specular) {
-        return srec.attenuation * MIX_ray_color(srec.specular_ray, scene) / p_RR;
+        return srec.attenuation * NEE_ray_color(srec.specular_ray, scene,depth + 1,is_shadow) / p_RR;
     }
 
     //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
@@ -364,8 +364,7 @@ color NEE_ray_color(const ray &r, const Scene &scene, int depth, bool is_shadow)
 
     //直接光照
     auto light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
-    pointf3 light_point = light_pdf_ptr->generate() + rec.p;
-    vecf3 light_direction = light_point - rec.p;
+    vecf3 light_direction = light_pdf_ptr->generate();
     ray shadow_ray = ray(rec.p, light_direction, r.time());
     double p_dir = light_pdf_ptr->value(shadow_ray.direction());
 
@@ -385,8 +384,6 @@ color NEE_ray_color(const ray &r, const Scene &scene, int depth, bool is_shadow)
 
 color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_weight,bool is_shadow) {
 
-    //TODO:添加光源采样概率为0的判断
-    //TODO:为入射到Glass的shadow ray 删去采样过的直接光成分
     //TODO:处理体渲染渲染内容
     //TODO:处理三角形面片
 
@@ -413,7 +410,7 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     //如果是镜面反射，直接返回镜面反射的颜色，不依赖于光源
     if(srec.is_specular){
 //        return srec.attenuation * MIX_ray_color(srec.specular_ray, scene)/p_RR*emitted_weight;
-        return srec.attenuation * MIS_ray_color(srec.specular_ray, scene, depth + 1, emitted_weight)/p_RR;
+        return srec.attenuation * MIS_ray_color(srec.specular_ray, scene, depth + 1, emitted_weight,is_shadow)/p_RR;
     }
     //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
     if(is_shadow){
@@ -422,26 +419,23 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
 
     double mis_brdf_sample, mis_light_sample;
     shared_ptr<hittable_pdf> light_pdf_ptr;
-    pointf3 light_point;
     vecf3 light_direction;
     ray shadow_ray,scatter_ray;
     double p_dir, p_indir;
     color direct_light, indirect_light;
+
+    light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+    light_direction = light_pdf_ptr->generate();
+    shadow_ray = ray(rec.p, light_direction, r.time());
+    p_dir = light_pdf_ptr->value(shadow_ray.direction());
+    //间接光照
+    scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
+    p_indir = srec.pdf_ptr->value(scatter_ray.direction());
+    balance_heuristic(p_indir, p_dir, mis_brdf_sample, mis_light_sample, 1);
     //处理一般渲染
     if(rec.mat_ptr->type != material_type::Isotropic){
         //直接光照
-        light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
-        light_point = light_pdf_ptr->generate() + rec.p;
-        light_direction = light_point - rec.p;
-        shadow_ray = ray(rec.p, light_direction, r.time());
-        p_dir = light_pdf_ptr->value(shadow_ray.direction());
-        //间接光照
-        scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
-        p_indir = srec.pdf_ptr->value(scatter_ray.direction());
-
         //启发式平衡函数，这正是MIS的权重函数
-        balance_heuristic(p_indir, p_dir, mis_brdf_sample, mis_light_sample, 1);
-
         direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
                              * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
         indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
@@ -450,13 +444,20 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     }
 
     //处理体渲染
-    light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
-    light_direction = light_pdf_ptr->generate();
-    light_point = light_direction + rec.p;
-    shadow_ray = ray(rec.p, light_direction, r.time());
     hit_record light_rec;
+    vecf3 light_origin;
     if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, light_rec)) {//光源已在包围盒之外
-        ;
+        direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
+                       * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
+    } else{
+        light_origin = light_rec.p + light_rec.normal * 0.0001;
+        if (dot(light_origin - rec.p, rec.normal) > 0) {
+            double distance = (light_origin - rec.p).length();
+            direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
+                           * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
+        } else {
+            direct_light = color(0, 0, 0);
+        }
     }
 }
 

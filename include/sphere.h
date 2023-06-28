@@ -49,6 +49,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec)const
     //判断光线在给定范围内是否与球相交
     vecf3 oc = r.origin() - center;//A-C
     auto a = r.direction().length_squared();
+    if(a==0) return false;//光线方向为0，不相交
     auto half_b = dot(oc, r.direction());
     auto c = oc.length_squared() - radius * radius;
 
@@ -81,6 +82,16 @@ bool sphere::bounding_box(double time0, double time1, aabb& output_box) const {
 }
 
 double sphere::pdf_value(const pointf3& o, const vecf3& v) const {
+    vecf3 direction = center - o;
+    auto distance_squared = direction.length_squared();
+    if(distance_squared<radius*radius) {
+        //如果光源在球内部
+        return 1 / (4*pi);
+    }
+    if(distance_squared==radius*radius){
+        //如果光源在球外部
+        return 0;
+    }
     hit_record rec;
     if (!this->hit(ray(o, v), 0.001, infinity, rec))
         return 0;
@@ -94,9 +105,19 @@ double sphere::pdf_value(const pointf3& o, const vecf3& v) const {
 vecf3 sphere::random(const vecf3& o) const {
     vecf3 direction = center - o;
     auto distance_squared = direction.length_squared();
-    onb uvw;
-    uvw.build_from_w(direction);
-    return uvw.local(random_to_sphere(radius, distance_squared));
+    if(distance_squared<radius*radius){
+        //如果光源在球内部
+        return random_on_unit_sphere();
+    }else if(distance_squared-radius*radius==0) {
+        //光源在球上
+        return vecf3 (0,0,0);
+    }
+    else{
+        onb uvw;
+        uvw.build_from_w(direction);
+        return uvw.local(random_to_sphere(radius, distance_squared));
+    }
+
 }
 
 #endif

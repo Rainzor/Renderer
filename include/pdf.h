@@ -141,6 +141,24 @@ public:
     pointf3 o; // 光线起点
 };
 
+class light_pdf : public pdf {
+public:
+    light_pdf(shared_ptr<hittable> p, const pointf3 &origin) : light_ptr(p), o(origin) {
+    }
+    //输入光线起点o和方向v，计算与物体相交点的pdf值
+    virtual double value(const vecf3 &direction) const override {
+        return light_ptr->pdf_value(o, direction);
+    }
+    //输入光线起点o，返回从物体表面采样的点与光线起点连接的出射方向
+    virtual vecf3 generate() const override {
+        return light_ptr->random(o);
+    }
+public:
+    shared_ptr<hittable> light_ptr;
+    pointf3 o; // 光线起点
+};
+
+
 class mixture_pdf : public pdf {
 public:
     mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1) {

@@ -59,17 +59,22 @@ bool hittable_list::bounding_box(double time0, double time1, aabb&ouput_box)cons
 }
 
 double hittable_list::pdf_value(const vecf3 &o, const vecf3 &v) const {
-    auto weight = 1.0 / objects.size();
+    auto size = objects.size();
     auto sum = 0.0;
-    for (const auto& object : objects)
-        sum += weight * object->pdf_value(o, v);
-    return sum;
+    double pdf_value = 0.0;
+    for (const auto& object : objects) {
+        pdf_value = object->pdf_value(o, v);
+        sum += pdf_value;
+    }
+    return sum/size;
 }
 
 vecf3 hittable_list::random(const vecf3 &o) const {
     auto int_size = static_cast<int>(objects.size());
-    return objects[random_int(0, int_size - 1)]->random(o);
+    do{
+       vecf3 rand_dir = objects[random_int(0, int_size - 1)]->random(o);
+       if(rand_dir.length()!=0) return rand_dir;
+    } while (true);
 }
-
 
 #endif

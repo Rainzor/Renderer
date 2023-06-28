@@ -24,5 +24,5 @@ endif()
 
 include_directories(common)
 include_directories(include)
-add_executable(main  main.cpp include/hittable_lights_list.h)
+add_executable(main  main.cpp)
 

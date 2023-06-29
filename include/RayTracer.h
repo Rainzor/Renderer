@@ -1,5 +1,5 @@
-#ifndef RAYTRACER_RAYTRACER_H
-#define RAYTRACER_RAYTRACER_H
+#ifndef RAYTRACER_H
+#define RAYTRACER_H
 
 #include <chrono>
 #include <iostream>

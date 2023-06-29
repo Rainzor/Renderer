@@ -24,19 +24,27 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-include_directories(common)
-include_directories(include)
 find_package(Qt5 COMPONENTS
         Core
         Gui
         Widgets
         REQUIRED)
 
-include_directories(common)
-include_directories(include)
-add_executable(main  main.cpp)
-add_executable(Test test.cpp include/RayTracer.h include/scene.h)
-add_executable(Renderer renderer.cpp mainwindow.h mainwindow.cpp)
+include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/common
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/shapes
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/external
+)
+
+
+file(GLOB_RECURSE SOURCE_FILES
+        "main.cpp"
+        "mainwindow.cpp"
+        "src/*.cpp"
+        )
+
+add_executable(Renderer ${SOURCE_FILES})
 
 target_link_libraries(Renderer
         Qt5::Core

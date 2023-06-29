@@ -1,6 +1,6 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
-#include "rtweekend.h"
+#include "common.h"
 #include "aabb.h"
 #include "onb.h"
 class material;  // alert the compiler that the pointer is to a class
@@ -12,8 +12,9 @@ struct hit_record {
     double t;//光线走过的距离参数t: p = O + t*D
     double u,v;//纹理坐标
     bool front_face;//是否正面朝向
+    double density;//体密度
     shared_ptr<material> mat_ptr;//交点材质
-    shared_ptr<hittable> hit_ptr;//交点物体
+    shared_ptr<hittable> boundary_ptr= nullptr;//交点物体
     inline void set_face_normal(const ray& r_in, const vecf3& outward_normal) {
         front_face = dot(r_in.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;

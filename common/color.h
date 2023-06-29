@@ -1,7 +1,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include "rtweekend.h"
+#include "common.h"
 #include "rtw_stb_image.h"
 #include <iostream>
 #include <vector>
@@ -34,11 +34,11 @@ void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
         << static_cast<int>(256 * clamp(b, 0.0, 0.999)) << '\n';
 }
 
-void write_img(const char* filename, int width ,int hight,const std::vector<color>& img, int samples_per_pixel) {
+void write_img(const char* filename, int width ,int height,const std::vector<color>& img, int samples_per_pixel) {
     int num_channels = 3;
-    char *data = new char[width * hight * num_channels];
+    char *data = new char[width * height * num_channels];
     int index = 0;
-    for (int j = hight - 1; j >= 0; --j) {
+    for (int j = height - 1; j >= 0; --j) {
         for (int i = 0; i < width; ++i) {
             color pixel_color = img[j * width + i];
             auto r = pixel_color.x();
@@ -62,7 +62,7 @@ void write_img(const char* filename, int width ,int hight,const std::vector<colo
         }
     }
 
-    stbi_write_png(filename, width, hight, num_channels, data, width * num_channels);
+    stbi_write_png(filename, width, height, num_channels, data, width * num_channels);
 
     delete [] data;
 }

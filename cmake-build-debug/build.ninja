@@ -74,6 +74,40 @@ build main.exe: CXX_EXECUTABLE_LINKER__main_Debug CMakeFiles/main.dir/main.cpp.o
   TARGET_IMPLIB = libmain.dll.a
   TARGET_PDB = main.exe.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target Renderer
+
+
+#############################################
+# Order-only phony target for Renderer
+
+build cmake_object_order_depends_target_Renderer: phony || CMakeFiles/Renderer.dir
+
+build CMakeFiles/Renderer.dir/render.cpp.obj: CXX_COMPILER__Renderer_Debug D$:/CG/Rendering/Renderer/render.cpp || cmake_object_order_depends_target_Renderer
+  DEP_FILE = CMakeFiles\Renderer.dir\render.cpp.obj.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++11
+  INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include
+  OBJECT_DIR = CMakeFiles\Renderer.dir
+  OBJECT_FILE_DIR = CMakeFiles\Renderer.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target Renderer
+
+
+#############################################
+# Link the executable Renderer.exe
+
+build Renderer.exe: CXX_EXECUTABLE_LINKER__Renderer_Debug CMakeFiles/Renderer.dir/render.cpp.obj
+  FLAGS = -fopenmp -g
+  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\Renderer.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = Renderer.exe
+  TARGET_IMPLIB = libRenderer.dll.a
+  TARGET_PDB = Renderer.exe.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -100,6 +134,8 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
+build Renderer: phony Renderer.exe
+
 build main: phony main.exe
 
 # =============================================================================
@@ -110,7 +146,7 @@ build main: phony main.exe
 #############################################
 # Folder: D:/CG/Rendering/Renderer/cmake-build-debug
 
-build all: phony main.exe
+build all: phony main.exe Renderer.exe
 
 # =============================================================================
 # Unknown Build Time Dependencies.

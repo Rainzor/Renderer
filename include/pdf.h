@@ -1,6 +1,6 @@
 #ifndef PDF_H
 #define PDF_H
-#include "rtweekend.h"
+#include "common.h"
 #include "onb.h"
 #include "hittable.h"
 
@@ -121,7 +121,16 @@ public:
     public:
         onb uvw;
 };
-
+class uniform_pdf:public pdf{
+public:
+    uniform_pdf(){}
+    virtual double value(const vecf3 &direction) const override {
+        return 1/(4*pi);
+    }
+    virtual vecf3 generate() const override {
+        return random_on_unit_sphere();
+    }
+};
 
 class hittable_pdf : public pdf {
 public:

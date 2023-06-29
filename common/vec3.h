@@ -1,6 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
-#include "rtweekend.h"
+#include "common.h"
 #include <cmath>
 #include <iostream>
 using std::sqrt;

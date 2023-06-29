@@ -1,7 +1,7 @@
 #ifndef CONSTANT_MEDIUM_H
 #define CONSTANT_MEDIUM_H
 
-#include "rtweekend.h"
+#include "common.h"
 
 #include "hittable.h"
 #include "material.h"
@@ -64,9 +64,9 @@ bool constant_medium::hit(const ray& r, double t_min, double t_max, hit_record& 
     if (debugging)
         std::cerr << "\nt_min=" << rec1.t << ", t_max=" << rec2.t << '\n';
 
-    if (rec1.t < t_min)
+    if (rec1.t < t_min|| isnan(rec1.t))
         rec1.t = t_min;
-    if (rec2.t > t_max)
+    if (rec2.t > t_max|| isnan(rec2.t))
         rec2.t = t_max;
 
     if (rec1.t >= rec2.t)//如果是在光源反向，则return false
@@ -98,6 +98,8 @@ bool constant_medium::hit(const ray& r, double t_min, double t_max, hit_record& 
     rec.normal = vecf3(1, 0, 0);  // arbitrary
     rec.front_face = true;       // also arbitrary
     rec.mat_ptr = phase_function;
+    rec.boundary_ptr = boundary;
+    rec.density = -1/neg_inv_density;
     return true;
 }
 

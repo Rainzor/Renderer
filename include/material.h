@@ -1,7 +1,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "rtweekend.h"
+#include "common.h"
 #include "hittable.h"
 #include "texture.h"
 #include "onb.h"
@@ -11,8 +11,10 @@
 Scatter_record结构体用来记录材料的散射信息
 */
 struct scatter_record {
-    ray specular_ray;//镜面光线
-    bool is_specular;//是否为镜面反射
+    ray scatter_ray;//光线
+    bool is_specular= false;//是否为镜面反射
+    bool is_medium = false;
+    bool is_refract = false;
     color attenuation;//材质的吸收系数
     shared_ptr<pdf> pdf_ptr;//散射光线的概率分布函数
 };
@@ -109,7 +111,7 @@ public:
         ) const override {
 
         vecf3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        srec.specular_ray = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
+        srec.scatter_ray = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
         srec.attenuation = albedo;
         srec.is_specular = true;
         srec.pdf_ptr = nullptr;
@@ -139,7 +141,6 @@ public:
         ) const override {
 
         srec.attenuation = color(1.0, 1.0, 1.0); // 透明
-        srec.is_specular = true;
         srec.pdf_ptr = nullptr;
         double refraction_ratio = rec.front_face ? (1.0 / ir) : ir;  // 判断是进入还是离开物体
         vecf3 unit_direction = unit_vector(r_in.direction());
@@ -147,12 +148,18 @@ public:
         double sin_theta = sqrt(1.0 - cos_theta * cos_theta);   // sinθ
         bool cannot_refract = refraction_ratio * sin_theta > 1.0;// 不能折射
         vecf3 direction;
-        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
+        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
             //不能折射
             direction = reflect(unit_direction, rec.normal);
-        else// 可以折射
+            srec.is_refract=false;
+            srec.is_specular = true;
+        }
+        else {// 可以折射
             direction = refract(unit_direction, rec.normal, refraction_ratio);
-        srec.specular_ray = ray(rec.p, direction, r_in.time());
+            srec.is_refract=true;
+            srec.is_specular = true;
+        }
+        srec.scatter_ray = ray(rec.p, direction, r_in.time());
         return true;
     }
 
@@ -221,13 +228,23 @@ public:
         scatter_record &srec
         ) const override {
         // 散射方向为随机的单位球内的随机点，保持散射方向的各向同性
-        srec.specular_ray = ray(rec.p, random_in_unit_sphere(), r_in.time());
         srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
+        srec.pdf_ptr = make_shared<uniform_pdf>();
+        srec.is_specular= false;
+        srec.is_medium = true;
+        srec.scatter_ray = ray(r_in);
         return true;
     }
 
     virtual void getType(material_type &m) const override {
         m = material_type::Isotropic;
+    }
+
+    double scattering_pdf(
+            const ray &r_in,
+            const hit_record &rec,
+            const ray &scattered) const override {
+        return 1/(4*pi);
     }
 
 public:
@@ -252,8 +269,8 @@ public:
             scatter_record &srec
     ) const override {
         // 散射方向为随机的单位球内的随机点，保持散射方向的各向同性
-        srec.specular_ray = ray(rec.p, random_in_unit_sphere(), r_in.time());
         srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
+        srec.pdf_ptr = make_shared<uniform_pdf>();
         return true;
     }
 

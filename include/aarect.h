@@ -1,7 +1,7 @@
 #ifndef AARECT_H
 #define AARECT_H
 
-#include "rtweekend.h"
+#include "common.h"
 
 #include "hittable.h"
 
@@ -47,7 +47,7 @@ class xy_rect : public hittable {//法向量为(0,0,1)
 
 bool xy_rect::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
         auto t = (k - r.origin().z()) / r.direction().z();//根据纵坐标计算z
-        if (t < t_min || t > t_max)
+        if (t < t_min || t > t_max || t != t)
             return false;
         auto x = r.origin().x() + t * r.direction().x();
         auto y = r.origin().y() + t * r.direction().y();
@@ -107,7 +107,7 @@ class xz_rect : public hittable {//法向量为(0,1,0)
 };
 bool xz_rect::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
         auto t = (k - r.origin().y()) / r.direction().y();
-        if (t < t_min || t > t_max)
+        if (t < t_min || t > t_max|| t != t)
             return false;
         auto x = r.origin().x() + t * r.direction().x();
         auto z = r.origin().z() + t * r.direction().z();
@@ -166,7 +166,7 @@ class yz_rect : public hittable {//法向量为(1,0,0)
 
 bool yz_rect::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
         auto t = (k - r.origin().x()) / r.direction().x();
-        if (t < t_min || t > t_max)
+        if (t < t_min || t > t_max|| t != t)
             return false;
         auto y = r.origin().y() + t * r.direction().y();
         auto z = r.origin().z() + t * r.direction().z();

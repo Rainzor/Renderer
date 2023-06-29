@@ -227,7 +227,7 @@ void cornell_smoke(Scene &scene){
     scene.height = image_height;
 }
 
-hittable_list final_scene(Scene &scene){
+void final_scene(Scene &scene){
     scene.background = color(0, 0, 0);
 
     hittable_list boxes1;

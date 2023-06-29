@@ -183,10 +183,10 @@ public:
 class diffuse_light : public material {
 public:
     diffuse_light(shared_ptr<texture> a) :
-        emit(a) {
+        emitt(a) {
     }
     diffuse_light(color c) :
-        emit(make_shared<solid_color>(c)) {
+        emitt(make_shared<solid_color>(c)) {
     }
 
     virtual bool scatter(
@@ -200,7 +200,7 @@ public:
     virtual color emitted(
         const ray &r_in, const hit_record &rec, double u, double v, const pointf3 &p) const override {
         if (rec.front_face)//只有材料的正面法向与入射光线方向相反时，才会发光
-            return emit->value(u, v, p);
+            return emitt->value(u, v, p);
         return color(0, 0, 0); 
     }
 
@@ -209,7 +209,7 @@ public:
     }
 
 public:
-    shared_ptr<texture> emit;
+    shared_ptr<texture> emitt;
 };
 
 // 各向同性的散射材质

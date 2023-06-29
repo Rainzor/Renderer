@@ -17,6 +17,7 @@
 #include "material.h"
 #include "moving_sphere.h"
 #include "sphere.h"
+#include "triangle.h"
 #include "participate_medium.h"
 #include "scene.h"
 #define NUM_THREADS 8 // 线程数
@@ -27,26 +28,30 @@ using namespace std::chrono;
 enum class SampleMethod {
     BRDF = 1,
     Mixture = 2,
-    NEE = 3,
-    MIS = 4
+    Light = 3,
+    NEE = 4,
+    MIS = 5
 };
 
 class RayTracer {
 public:
     RayTracer(Scene scene, int width, int height):
-    scene(scene), width(width), height(height) {}
+            scene(scene), width(width), height(height) {}
     RayTracer(Scene scene):
-    scene(scene), width(scene.width), height(scene.height) {}
+            scene(scene), width(scene.width), height(scene.height) {}
     RayTracer() {}
     void ChangeScene(const Scene& s) {
         this->scene = s;
         this->width = s.width;
         this->height = s.height;
     }
-    void render(int spp=16, SampleMethod method = SampleMethod::BRDF,const std::string img_name="./output/img.png") const;
+    ~RayTracer() {}
+    void render(int spp=16, SampleMethod method = SampleMethod::BRDF,const std::string img_name="./output/img.png",bool isOpenMP=true) const;
+
 private:
     color ray_color(const ray &r,SampleMethod method)const;
     color BRDF_sample(const ray &r)const;
+    color light_sample(const ray &r)const;
     color Mixture_sample(const ray &r)const;
     color NEE_sample(const ray &r,int depth,bool is_shadow= false)const;
     color Muliti_Importance_sample(const ray &r,int depth, double emitted_weight,bool is_shadow= false)const;
@@ -66,33 +71,55 @@ public:
 };
 
 
-void RayTracer::render(int spp, SampleMethod method, const std::string img_name)const {
+void RayTracer::render(int spp, SampleMethod method, const std::string img_name,bool isOpenMP)const {
 // OpenMP
     omp_set_num_threads(NUM_THREADS);
     // OpenMP
-    auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     std::cout << "Rendering..." << std::endl;
     std::vector<color> img(width * height,color(0, 0, 0));
+
     int i, j, k, s;
     double u, v;
     ray r;
     color pixel_color;
     int sum = 0;
+
+    if(isOpenMP) {
 #pragma omp parallel for private(k, i, j, s, u, v, r, pixel_color) shared(img, sum)
-    for (k = 0; k < width * height; k++) {
-        j = k / width;
-        i = k % height;
-        pixel_color = color(0, 0, 0);
-        for (s = 0; s < spp; s += 1) {
-            // 制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
-            u = (i + random_double()) / (width - 1);
-            v = (j + random_double()) / (height - 1);
-            r = scene.cam->get_ray(u, v);
-            pixel_color += ray_color(r,method);
-        }
-        img[k] = pixel_color;
+        for (k = 0; k < width * height; k++) {
+            j = k / width;
+            i = k % height;
+            pixel_color = color(0, 0, 0);
+            for (s = 0; s < spp; s += 1) {
+                // 制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
+                u = (i + random_double()) / (width - 1);
+                v = (j + random_double()) / (height - 1);
+                r = scene.cam->get_ray(u, v);
+                pixel_color += ray_color(r, method);
+            }
+            img[k] = pixel_color;
 #pragma omp critical
-        {
+            {
+                if (i == 0) {
+                    sum++;
+                    std::cout << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
+                }
+            }
+        }
+    }else{
+        for (k = 0; k < width * height; k++) {
+            j = k / width;
+            i = k % height;
+            pixel_color = color(0, 0, 0);
+            for (s = 0; s < spp; s += 1) {
+                // 制造随机数，使得每个像素点的采样来自周围点的平均值，从而消除锯齿
+                u = (i + random_double()) / (width - 1);
+                v = (j + random_double()) / (height - 1);
+                r = scene.cam->get_ray(u, v);
+                pixel_color += ray_color(r, method);
+            }
+            img[k] = pixel_color;
             if (i == 0) {
                 sum++;
                 std::cout << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
@@ -102,7 +129,7 @@ void RayTracer::render(int spp, SampleMethod method, const std::string img_name)
     write_img(img_name.c_str(), width, height, img, spp);
 
     auto end = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(end - start);
+    auto duration = std::chrono::duration_cast<seconds>(end - start);
 
     std::cout << std::endl << "Time Cost:"
               << duration.count()/60 << "min"
@@ -115,6 +142,9 @@ color RayTracer::ray_color(const ray &r, SampleMethod method) const {
     switch (method) {
         case SampleMethod::BRDF:
             L = BRDF_sample(r);
+            break;
+        case SampleMethod::Light:
+            L = light_sample(r);
             break;
         case SampleMethod::Mixture:
             L = Mixture_sample(r);
@@ -165,6 +195,38 @@ color RayTracer::BRDF_sample(const ray &r)const {
              * BRDF_sample(scatter_ray)/p_RR/ pdf_val;
 }
 
+color RayTracer::light_sample(const ray &r) const {
+    hit_record rec;
+    // If the ray hits nothing, return the background color.
+    if (!scene.world.hit(r, 0.001, infinity, rec))
+        return scene.background;
+
+    scatter_record srec;
+    color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+
+    if (!rec.mat_ptr->scatter(r, rec, srec))
+        return emitted;
+
+    float p_RR = 0.9;     // 概率反射系数
+    if (random_double() > p_RR)
+        return color (0, 0, 0);
+
+    if (srec.is_specular) {
+        return srec.attenuation
+               * light_sample(srec.scatter_ray)/p_RR;
+    }
+
+    auto light_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+    ray scatter_ray = ray(rec.p, light_ptr->generate(), r.time());
+    auto pdf_val = light_ptr->value(scatter_ray.direction());
+    if(pdf_val){
+        return emitted
+               + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
+                 * light_sample(scatter_ray)/p_RR/ pdf_val;
+    } else{
+        return emitted;
+    }
+}
 
 color RayTracer::Mixture_sample(const ray &r) const {
     hit_record rec;
@@ -230,7 +292,7 @@ color RayTracer::NEE_sample(const ray &r,int depth,bool is_shadow) const {
             double light_trans_distance = (rec_lgt.p-rec.p).length();
             double light_attenuation = exp(-rec.density *light_trans_distance);
             return srec.attenuation *light_attenuation*
-                    NEE_sample(shadow_ray, depth + 1,  true);
+                   NEE_sample(shadow_ray, depth + 1,  true);
         }
     }
 
@@ -267,7 +329,7 @@ color RayTracer::NEE_sample(const ray &r,int depth,bool is_shadow) const {
         if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, rec_lgt)) { // 在0-infinity范围内找到内表面位置
             if (p_dir)
                 direct_light =srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)*
-                        NEE_sample(shadow_ray, depth + 1,  true)
+                              NEE_sample(shadow_ray, depth + 1,  true)
                               / p_dir;
         }
         else{
@@ -317,7 +379,7 @@ color RayTracer::Muliti_Importance_sample(const ray &r,int depth, double emitted
             double light_trans_distance = (rec_lgt.p-rec.p).length();
             double light_attenuation = exp(-0.01*light_trans_distance);
             return srec.attenuation *light_attenuation*
-                    Muliti_Importance_sample(shadow_ray, depth + 1, emitted_weight, true);
+                   Muliti_Importance_sample(shadow_ray, depth + 1, emitted_weight, true);
         }
     }
 
@@ -379,7 +441,7 @@ color RayTracer::Muliti_Importance_sample(const ray &r,int depth, double emitted
         if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, rec_lgt)) { // 在0-infinity范围内找到内表面位置
             if (p_dir)
                 direct_light =srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)*
-                        Muliti_Importance_sample(shadow_ray, depth + 1, mis_light_sample, true)
+                              Muliti_Importance_sample(shadow_ray, depth + 1, mis_light_sample, true)
                               / p_dir;
         }
         else{

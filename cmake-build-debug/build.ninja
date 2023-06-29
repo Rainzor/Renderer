@@ -51,7 +51,7 @@ build cmake_object_order_depends_target_main: phony || CMakeFiles/main.dir
 
 build CMakeFiles/main.dir/main.cpp.obj: CXX_COMPILER__main_Debug D$:/CG/Rendering/Renderer/main.cpp || cmake_object_order_depends_target_main
   DEP_FILE = CMakeFiles\main.dir\main.cpp.obj.d
-  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++11
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++17
   INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include
   OBJECT_DIR = CMakeFiles\main.dir
   OBJECT_FILE_DIR = CMakeFiles\main.dir
@@ -75,6 +75,40 @@ build main.exe: CXX_EXECUTABLE_LINKER__main_Debug CMakeFiles/main.dir/main.cpp.o
   TARGET_PDB = main.exe.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target Test
+
+
+#############################################
+# Order-only phony target for Test
+
+build cmake_object_order_depends_target_Test: phony || CMakeFiles/Test.dir
+
+build CMakeFiles/Test.dir/test.cpp.obj: CXX_COMPILER__Test_Debug D$:/CG/Rendering/Renderer/test.cpp || cmake_object_order_depends_target_Test
+  DEP_FILE = CMakeFiles\Test.dir\test.cpp.obj.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++17
+  INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include
+  OBJECT_DIR = CMakeFiles\Test.dir
+  OBJECT_FILE_DIR = CMakeFiles\Test.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target Test
+
+
+#############################################
+# Link the executable Test.exe
+
+build Test.exe: CXX_EXECUTABLE_LINKER__Test_Debug CMakeFiles/Test.dir/test.cpp.obj
+  FLAGS = -fopenmp -g
+  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\Test.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = Test.exe
+  TARGET_IMPLIB = libTest.dll.a
+  TARGET_PDB = Test.exe.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target Renderer
 
 
@@ -83,10 +117,19 @@ build main.exe: CXX_EXECUTABLE_LINKER__main_Debug CMakeFiles/main.dir/main.cpp.o
 
 build cmake_object_order_depends_target_Renderer: phony || CMakeFiles/Renderer.dir
 
-build CMakeFiles/Renderer.dir/render.cpp.obj: CXX_COMPILER__Renderer_Debug D$:/CG/Rendering/Renderer/render.cpp || cmake_object_order_depends_target_Renderer
-  DEP_FILE = CMakeFiles\Renderer.dir\render.cpp.obj.d
-  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++11
-  INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include
+build CMakeFiles/Renderer.dir/renderer.cpp.obj: CXX_COMPILER__Renderer_Debug D$:/CG/Rendering/Renderer/renderer.cpp || cmake_object_order_depends_target_Renderer
+  DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles\Renderer.dir\renderer.cpp.obj.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++17
+  INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include -isystem D:/Qt/5.15.2/mingw81_64/include -isystem D:/Qt/5.15.2/mingw81_64/include/QtCore -isystem D:/Qt/5.15.2/mingw81_64/./mkspecs/win32-g++ -isystem D:/Qt/5.15.2/mingw81_64/include/QtGui -isystem D:/Qt/5.15.2/mingw81_64/include/QtANGLE -isystem D:/Qt/5.15.2/mingw81_64/include/QtWidgets
+  OBJECT_DIR = CMakeFiles\Renderer.dir
+  OBJECT_FILE_DIR = CMakeFiles\Renderer.dir
+
+build CMakeFiles/Renderer.dir/mainwindow.cpp.obj: CXX_COMPILER__Renderer_Debug D$:/CG/Rendering/Renderer/mainwindow.cpp || cmake_object_order_depends_target_Renderer
+  DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles\Renderer.dir\mainwindow.cpp.obj.d
+  FLAGS = -fopenmp -g -fdiagnostics-color=always -std=gnu++17
+  INCLUDES = -ID:/CG/Rendering/Renderer/common -ID:/CG/Rendering/Renderer/include -isystem D:/Qt/5.15.2/mingw81_64/include -isystem D:/Qt/5.15.2/mingw81_64/include/QtCore -isystem D:/Qt/5.15.2/mingw81_64/./mkspecs/win32-g++ -isystem D:/Qt/5.15.2/mingw81_64/include/QtGui -isystem D:/Qt/5.15.2/mingw81_64/include/QtANGLE -isystem D:/Qt/5.15.2/mingw81_64/include/QtWidgets
   OBJECT_DIR = CMakeFiles\Renderer.dir
   OBJECT_FILE_DIR = CMakeFiles\Renderer.dir
 
@@ -98,11 +141,11 @@ build CMakeFiles/Renderer.dir/render.cpp.obj: CXX_COMPILER__Renderer_Debug D$:/C
 #############################################
 # Link the executable Renderer.exe
 
-build Renderer.exe: CXX_EXECUTABLE_LINKER__Renderer_Debug CMakeFiles/Renderer.dir/render.cpp.obj
+build Renderer.exe: CXX_EXECUTABLE_LINKER__Renderer_Debug CMakeFiles/Renderer.dir/renderer.cpp.obj CMakeFiles/Renderer.dir/mainwindow.cpp.obj | D$:/Qt/5.15.2/mingw81_64/lib/libQt5Widgets.a D$:/Qt/5.15.2/mingw81_64/lib/libQt5Gui.a D$:/Qt/5.15.2/mingw81_64/lib/libQt5Core.a
   FLAGS = -fopenmp -g
-  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  LINK_LIBRARIES = D:/Qt/5.15.2/mingw81_64/lib/libQt5Widgets.a  D:/Qt/5.15.2/mingw81_64/lib/libQt5Gui.a  D:/Qt/5.15.2/mingw81_64/lib/libQt5Core.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Renderer.dir
-  POST_BUILD = cd .
+  POST_BUILD = cmd.exe /C "cd /D D:\CG\Rendering\Renderer\cmake-build-debug && "F:\JetBrains\CLion 2023.1.3\bin\cmake\win\x64\bin\cmake.exe" -E make_directory D:/CG/Rendering/Renderer/cmake-build-debug/plugins/platforms/ && cd /D D:\CG\Rendering\Renderer\cmake-build-debug && "F:\JetBrains\CLion 2023.1.3\bin\cmake\win\x64\bin\cmake.exe" -E copy D:/Qt/5.15.2/mingw81_64/plugins/platforms/qwindows.dll D:/CG/Rendering/Renderer/cmake-build-debug/plugins/platforms/ && cd /D D:\CG\Rendering\Renderer\cmake-build-debug && "F:\JetBrains\CLion 2023.1.3\bin\cmake\win\x64\bin\cmake.exe" -E copy D:/Qt/5.15.2/mingw81_64/bin/Qt5Core.dll D:/CG/Rendering/Renderer/cmake-build-debug && cd /D D:\CG\Rendering\Renderer\cmake-build-debug && "F:\JetBrains\CLion 2023.1.3\bin\cmake\win\x64\bin\cmake.exe" -E copy D:/Qt/5.15.2/mingw81_64/bin/Qt5Gui.dll D:/CG/Rendering/Renderer/cmake-build-debug && cd /D D:\CG\Rendering\Renderer\cmake-build-debug && "F:\JetBrains\CLion 2023.1.3\bin\cmake\win\x64\bin\cmake.exe" -E copy D:/Qt/5.15.2/mingw81_64/bin/Qt5Widgets.dll D:/CG/Rendering/Renderer/cmake-build-debug"
   PRE_LINK = cd .
   TARGET_FILE = Renderer.exe
   TARGET_IMPLIB = libRenderer.dll.a
@@ -136,6 +179,8 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 
 build Renderer: phony Renderer.exe
 
+build Test: phony Test.exe
+
 build main: phony main.exe
 
 # =============================================================================
@@ -146,7 +191,7 @@ build main: phony main.exe
 #############################################
 # Folder: D:/CG/Rendering/Renderer/cmake-build-debug
 
-build all: phony main.exe Renderer.exe
+build all: phony main.exe Test.exe Renderer.exe
 
 # =============================================================================
 # Unknown Build Time Dependencies.
@@ -160,14 +205,14 @@ build all: phony main.exe Renderer.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | CMakeCache.txt CMakeFiles/3.25.2/CMakeCXXCompiler.cmake CMakeFiles/3.25.2/CMakeRCCompiler.cmake CMakeFiles/3.25.2/CMakeSystem.cmake D$:/CG/Rendering/Renderer/CMakeLists.txt F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCXXInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCommonLanguageInclude.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeGenericSystem.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeInitializeConfigs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeLanguageInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseImplicitLinkInfo.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeRCInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInitialize.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/CMakeCommonCompilerMacros.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindOpenMP.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageHandleStandardArgs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageMessage.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX-ABI.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-windres.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/WindowsPaths.cmake
+build build.ninja: RERUN_CMAKE | CMakeCache.txt CMakeFiles/3.25.2/CMakeCXXCompiler.cmake CMakeFiles/3.25.2/CMakeRCCompiler.cmake CMakeFiles/3.25.2/CMakeSystem.cmake D$:/CG/Rendering/Renderer/CMakeLists.txt D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreMacros.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QGifPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QICNSPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QICOPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QJpegPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QMinimalIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QOffscreenIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QSvgIconPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QSvgPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTgaPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTiffPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTuioTouchPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QVirtualKeyboardPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWbmpPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWebGLIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWebpPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QXdgDesktopPortalThemePlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5Widgets_QWindowsVistaStylePlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5Config.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5ConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5ModuleLocation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCXXInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCommonLanguageInclude.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeGenericSystem.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeInitializeConfigs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeLanguageInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseArguments.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseImplicitLinkInfo.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeRCInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInitialize.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/CMakeCommonCompilerMacros.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindOpenMP.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageHandleStandardArgs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageMessage.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX-ABI.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-windres.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/WindowsPaths.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build CMakeCache.txt CMakeFiles/3.25.2/CMakeCXXCompiler.cmake CMakeFiles/3.25.2/CMakeRCCompiler.cmake CMakeFiles/3.25.2/CMakeSystem.cmake D$:/CG/Rendering/Renderer/CMakeLists.txt F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCXXInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCommonLanguageInclude.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeGenericSystem.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeInitializeConfigs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeLanguageInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseImplicitLinkInfo.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeRCInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInitialize.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/CMakeCommonCompilerMacros.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindOpenMP.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageHandleStandardArgs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageMessage.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX-ABI.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-windres.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/WindowsPaths.cmake: phony
+build CMakeCache.txt CMakeFiles/3.25.2/CMakeCXXCompiler.cmake CMakeFiles/3.25.2/CMakeRCCompiler.cmake CMakeFiles/3.25.2/CMakeSystem.cmake D$:/CG/Rendering/Renderer/CMakeLists.txt D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Core/Qt5CoreMacros.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QGifPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QICNSPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QICOPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QJpegPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QMinimalIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QOffscreenIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QSvgIconPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QSvgPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTgaPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTiffPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QTuioTouchPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QVirtualKeyboardPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWbmpPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWebGLIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWebpPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsIntegrationPlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Gui/Qt5Gui_QXdgDesktopPortalThemePlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfig.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigExtras.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5Widgets/Qt5Widgets_QWindowsVistaStylePlugin.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5Config.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5ConfigVersion.cmake D$:/Qt/5.15.2/mingw81_64/lib/cmake/Qt5/Qt5ModuleLocation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCXXInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeCommonLanguageInclude.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeGenericSystem.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeInitializeConfigs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeLanguageInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseArguments.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeParseImplicitLinkInfo.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeRCInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInformation.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/CMakeSystemSpecificInitialize.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/CMakeCommonCompilerMacros.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Compiler/GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindOpenMP.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageHandleStandardArgs.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/FindPackageMessage.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX-ABI.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU-CXX.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-GNU.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows-windres.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/Windows.cmake F$:/JetBrains/CLion$ 2023.1.3/bin/cmake/win/x64/share/cmake-3.25/Modules/Platform/WindowsPaths.cmake: phony
 
 
 #############################################

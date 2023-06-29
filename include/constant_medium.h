@@ -98,7 +98,6 @@ bool constant_medium::hit(const ray& r, double t_min, double t_max, hit_record& 
     rec.normal = vecf3(1, 0, 0);  // arbitrary
     rec.front_face = true;       // also arbitrary
     rec.mat_ptr = phase_function;
-    rec.boundary_ptr = boundary;
     return true;
 }
 

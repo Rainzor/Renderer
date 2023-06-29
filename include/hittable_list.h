@@ -40,6 +40,7 @@ bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_record& re
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
+            rec.hit_ptr = object;
         }
     }
     return hit_anything;

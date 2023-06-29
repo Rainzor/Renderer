@@ -11,7 +11,7 @@
 Scatter_record结构体用来记录材料的散射信息
 */
 struct scatter_record {
-    ray specular_ray;//散射光线
+    ray specular_ray;//镜面光线
     bool is_specular;//是否为镜面反射
     color attenuation;//材质的吸收系数
     shared_ptr<pdf> pdf_ptr;//散射光线的概率分布函数
@@ -21,7 +21,7 @@ enum class material_type {
     Lambertian,
     Metal,
     Glass,
-    Light,
+    DiffuseLight,
     Isotropic
 };
 
@@ -51,8 +51,12 @@ public:
         const ray &scattered) const {
         return 0;
     }
+
+    virtual void getType(material_type &m) const {
+        return;
+    }
+
 public:
-    material_type type;
 };
 // 漫反射粗糙材质
 class lambertian : public material {
@@ -85,9 +89,12 @@ public:
         return cosine < 0 ? 0 : cosine / pi;
     }
 
+    virtual void getType(material_type &m) const override {
+        m = material_type::Lambertian;
+    }
+
 public:
     shared_ptr<texture> albedo;
-    material_type type = material_type::Lambertian;
 };
 // 反射金属材质
 class metal : public material {
@@ -109,10 +116,13 @@ public:
         return true;
     }
 
+    virtual void getType(material_type &m) const override {
+        m = material_type::Metal;
+    }
+
 public:
     color albedo;
     double fuzz;
-    material_type type = material_type::Metal;
 };
 
 // 折射透明材质
@@ -146,6 +156,10 @@ public:
         return true;
     }
 
+    virtual void getType(material_type &m) const override {
+        m = material_type::Glass;
+    }
+
 private:
     static double reflectance(double cosine, double ref_idx) {
         // Use Schlick's approximation for reflectance.
@@ -156,7 +170,6 @@ private:
 
 public:
     double ir; // 折射率
-    material_type type = material_type::Glass;
 };
 
 // 自发光材质
@@ -184,9 +197,12 @@ public:
         return color(0, 0, 0); 
     }
 
+    virtual void getType(material_type &m) const override {
+        m = material_type::DiffuseLight;
+    }
+
 public:
     shared_ptr<texture> emit;
-    material_type type = material_type::Light;
 };
 
 // 各向同性的散射材质
@@ -210,9 +226,43 @@ public:
         return true;
     }
 
+    virtual void getType(material_type &m) const override {
+        m = material_type::Isotropic;
+    }
+
 public:
     shared_ptr<texture> albedo;
-    material_type type = material_type::Isotropic;
+};
+
+
+// 参与介质，phase_function为散射函数
+// 各向同性的散射材质
+class phase : public material {
+public:
+    phase(color c) :
+            albedo(make_shared<solid_color>(c)) {
+    }
+    phase(shared_ptr<texture> a) :
+            albedo(a) {
+    }
+
+    virtual bool scatter(
+            const ray &r_in,
+            const hit_record &rec,
+            scatter_record &srec
+    ) const override {
+        // 散射方向为随机的单位球内的随机点，保持散射方向的各向同性
+        srec.specular_ray = ray(rec.p, random_in_unit_sphere(), r_in.time());
+        srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
+        return true;
+    }
+
+    virtual void getType(material_type &m) const override {
+        m = material_type::Isotropic;
+    }
+
+public:
+    shared_ptr<texture> albedo;
 };
 
 #endif

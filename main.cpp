@@ -14,6 +14,7 @@
 #include "material.h"
 #include "moving_sphere.h"
 #include "sphere.h"
+#include "participate_medium.h"
 
 #define NUM_THREADS 8 // 线程数
 
@@ -132,6 +133,7 @@ int main() {
             image_width = 600;
             samples_per_pixel = 200;
             background = color(0, 0, 0);
+            lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
             lookfrom = pointf3(278, 278, -800);
             lookat = pointf3(278, 278, 0);
             vfov = 40.0;
@@ -424,18 +426,26 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     double p_dir, p_indir;
     color direct_light, indirect_light;
 
-    light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
-    light_direction = light_pdf_ptr->generate();
-    shadow_ray = ray(rec.p, light_direction, r.time());
-    p_dir = light_pdf_ptr->value(shadow_ray.direction());
-    //间接光照
-    scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
-    p_indir = srec.pdf_ptr->value(scatter_ray.direction());
-    balance_heuristic(p_indir, p_dir, mis_brdf_sample, mis_light_sample, 1);
     //处理一般渲染
-    if(rec.mat_ptr->type != material_type::Isotropic){
+
+    material_type m;
+    rec.mat_ptr->getType(m);
+
+    if(m != material_type::Isotropic){
+
         //直接光照
+
+        light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
+        light_direction = light_pdf_ptr->generate();
+        shadow_ray = ray(rec.p, light_direction, r.time());
+        p_dir = light_pdf_ptr->value(shadow_ray.direction());
+        //间接光照
+        scatter_ray = ray(rec.p, srec.pdf_ptr->generate(), r.time());
+        p_indir = srec.pdf_ptr->value(scatter_ray.direction());
+
         //启发式平衡函数，这正是MIS的权重函数
+        balance_heuristic(p_indir, p_dir, mis_brdf_sample, mis_light_sample, 1);
+
         direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
                              * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
         indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
@@ -446,19 +456,9 @@ color MIS_ray_color(const ray &r, const Scene &scene,int depth,double emitted_we
     //处理体渲染
     hit_record light_rec;
     vecf3 light_origin;
-    if (!rec.boundary_ptr->hit(shadow_ray, 0.001, infinity, light_rec)) {//光源已在包围盒之外
-        direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
-                       * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
-    } else{
-        light_origin = light_rec.p + light_rec.normal * 0.0001;
-        if (dot(light_origin - rec.p, rec.normal) > 0) {
-            double distance = (light_origin - rec.p).length();
-            direct_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, shadow_ray)
-                           * MIS_ray_color(shadow_ray, scene, depth+1, mis_light_sample, true) / p_dir;
-        } else {
-            direct_light = color(0, 0, 0);
-        }
-    }
+
+
+
 }
 
 void balance_heuristic(double f_pdf, double g_pdf, double &weight_f, double &weight_g, int beta){
@@ -588,8 +588,11 @@ hittable_list cornell_smoke() {
     box2 = make_shared<rotate_y>(box2, -18);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
 
-    objects.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
-    objects.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
+//    objects.add(make_shared<constant_medium>(box1, 0.01, color(0,0,0)));
+//    objects.add(make_shared<constant_medium>(box2, 0.01, color(1,1,1)));
+
+    objects.add(make_shared<participate_medium>(box1, color(0, 0, 0)));
+    objects.add(make_shared<participate_medium>(box2,  color(1, 1, 1)));
 
     return objects;
 }

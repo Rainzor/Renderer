@@ -24,5 +24,5 @@ endif()
 
 include_directories(common)
 include_directories(include)
-add_executable(main  main.cpp)
+add_executable(main  main.cpp include/participate_medium.h)
 

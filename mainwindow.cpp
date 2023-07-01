@@ -41,7 +41,8 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     sceneComboBox->addItem("Cornell Box");
     sceneComboBox->addItem("Mirror");
     sceneComboBox->addItem("Glass Ball");
-    sceneComboBox->addItem("Clouds");
+    sceneComboBox->addItem("Triangle");
+    sceneComboBox->addItem("Smoke");
     sceneComboBox->addItem("Final Scene");
     sceneLayout->addWidget(sceneLabel);
     sceneLayout->addWidget(sceneComboBox);
@@ -120,9 +121,12 @@ void MainWindow::startRendering() {
             sceneName = "Glass Ball";
             break;
         case 3:
-            sceneName = "Clouds";
+            sceneName = "Triangle";
             break;
         case 4:
+            sceneName = "Clouds";
+            break;
+        case 5:
             sceneName = "Final Scene";
             break;
         default:
@@ -157,7 +161,7 @@ void MainWindow::startRendering() {
             methodNam);
     outputTextEdit->append(output);
 
-    const char *filename = "./output/img.png";
+    const char *filename = "../output/img.png";
     QFuture<void> future = QtConcurrent::run(this, &MainWindow::renderInBackground, std::string(filename));
 }
 
@@ -177,9 +181,12 @@ void MainWindow::renderInBackground(const std::string &filename) {
             cornell_glass(scene);
             break;
         case 3:
-            cornell_smoke(scene);
+            cornell_triangle(scene);
             break;
         case 4:
+            cornell_smoke(scene);
+            break;
+        case 5:
             final_scene(scene);
             break;
         default:

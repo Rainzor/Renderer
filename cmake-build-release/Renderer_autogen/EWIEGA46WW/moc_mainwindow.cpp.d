@@ -22,10 +22,12 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   D:/CG/Rendering/Renderer/include/shapes/constant_medium.h \
   D:/CG/Rendering/Renderer/include/shapes/hittable.h \
   D:/CG/Rendering/Renderer/include/shapes/hittable_list.h \
+  D:/CG/Rendering/Renderer/include/shapes/mesh_triangle.h \
   D:/CG/Rendering/Renderer/include/shapes/moving_sphere.h \
   D:/CG/Rendering/Renderer/include/shapes/participate_medium.h \
   D:/CG/Rendering/Renderer/include/shapes/pdf.h \
   D:/CG/Rendering/Renderer/include/shapes/sphere.h \
+  D:/CG/Rendering/Renderer/include/shapes/triangle.h \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/QtConcurrent \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/QtConcurrentDepends \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/qtconcurrent_global.h \

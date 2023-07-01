@@ -1,10 +1,10 @@
 //
 
-#include "RayTracer.h"
+#include "RenderEngine.h"
 #include <iostream>
 
 int main(){
-    std::string img_name = "./output/img.png";
+    std::string img_name = "../output/img.png";
     Scene scene;
 
 
@@ -20,7 +20,7 @@ int main(){
 //    std::cin>>choice;
 //    std::cout<<std::endl;
     cornell_box(scene);
-    RayTracer rayTracer(scene);
+    RenderEngine rayTracer(scene);
 
 //    std::cout<<std::endl<<"Render Methods:"<<std::endl;
 //    std::cout<<"1. BRDF Sample"<<std::endl;
@@ -34,6 +34,6 @@ int main(){
 //    std::cin>>samples_per_pixel;
 //    std::cout<<std::endl;
 
-    rayTracer.render(32, SampleMethod::NEE, img_name);
+    rayTracer.render(16, SampleMethod::BRDF, img_name);
     return 0;
 }

@@ -27,10 +27,12 @@ Renderer_autogen/timestamp: \
 	D:/CG/Rendering/Renderer/include/shapes/constant_medium.h \
 	D:/CG/Rendering/Renderer/include/shapes/hittable.h \
 	D:/CG/Rendering/Renderer/include/shapes/hittable_list.h \
+	D:/CG/Rendering/Renderer/include/shapes/mesh_triangle.h \
 	D:/CG/Rendering/Renderer/include/shapes/moving_sphere.h \
 	D:/CG/Rendering/Renderer/include/shapes/participate_medium.h \
 	D:/CG/Rendering/Renderer/include/shapes/pdf.h \
 	D:/CG/Rendering/Renderer/include/shapes/sphere.h \
+	D:/CG/Rendering/Renderer/include/shapes/triangle.h \
 	D:/CG/Rendering/Renderer/main.cpp \
 	D:/CG/Rendering/Renderer/mainwindow.cpp \
 	D:/CG/Rendering/Renderer/mainwindow.h \

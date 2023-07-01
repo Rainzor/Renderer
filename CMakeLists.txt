@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 # Set to c++11
 set ( CMAKE_CXX_STANDARD 17 )
-#修改您电脑所在的位置
+#Change Qt Path
 set(CMAKE_PREFIX_PATH "D:/Qt/5.15.2/mingw81_64")
 
 find_package(OpenMP)
@@ -43,13 +43,13 @@ file(GLOB_RECURSE SOURCE_FILES
         "mainwindow.cpp"
         "src/*.cpp"
         )
-file(GLOB_RECURSE TEST_FILES
-        "test.cpp"
+file(GLOB_RECURSE EXAMPLE_FILES
+        "./example/example.cpp"
         "src/*.cpp"
         )
-add_executable(Renderer ${SOURCE_FILES})
-add_executable(Test ${TEST_FILES})
 
+add_executable(Renderer ${SOURCE_FILES})
+add_executable(Example ${SOURCE_FILES})
 target_link_libraries(Renderer
         Qt5::Core
         Qt5::Gui

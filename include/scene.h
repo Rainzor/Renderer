@@ -22,6 +22,7 @@
 #include "sphere.h"
 #include "participate_medium.h"
 #include "mesh_triangle.h"
+
 typedef struct Scene{
     shared_ptr<texture> background;
     hittable_list world;
@@ -41,5 +42,5 @@ void cornell_smoke(Scene &scene);
 
 void final_scene(Scene &scene);
 
-
+void test_scene(Scene & scene);
 #endif //RAYTRACER_SCENE_H

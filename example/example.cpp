@@ -19,7 +19,7 @@ int main(){
 //    int choice;
 //    std::cin>>choice;
 //    std::cout<<std::endl;
-    cornell_box(scene);
+    test_scene(scene);
     RenderEngine rayTracer(scene);
 
 //    std::cout<<std::endl<<"Render Methods:"<<std::endl;
@@ -34,6 +34,6 @@ int main(){
 //    std::cin>>samples_per_pixel;
 //    std::cout<<std::endl;
 
-    rayTracer.render(8, SampleMethod::BRDF, img_name, false);
+    rayTracer.render(8, SampleMethod::NEE, img_name, true);
     return 0;
 }

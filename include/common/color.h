@@ -6,14 +6,14 @@
 #include <iostream>
 #include <vector>
 
-void write_color(std::ostream &out, color pixel_color) {
+inline void write_color(std::ostream &out, color pixel_color) {
     // Write the translated [0,255] value of each color component.
     out << static_cast<int>(255.999 * pixel_color.x()) << ' '
         << static_cast<int>(255.999 * pixel_color.y()) << ' '
         << static_cast<int>(255.999 * pixel_color.z()) << '\n';
 }
 
-void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
+inline void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
@@ -34,7 +34,7 @@ void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
         << static_cast<int>(256 * clamp(b, 0.0, 0.999)) << '\n';
 }
 
-void write_img(const char* filename, int width ,int height,const std::vector<color>& img, int samples_per_pixel) {
+inline void write_img(const char* filename, int width ,int height,const std::vector<color>& img, int samples_per_pixel) {
     int num_channels = 3;
     char *data = new char[width * height * num_channels];
     int index = 0;

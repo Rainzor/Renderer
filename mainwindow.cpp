@@ -2,12 +2,12 @@
 // Created by Runze on 30/06/2023.
 //
 #include "mainwindow.h"
-#include "RayTracer.h"
+//#include "RayTracer.h"
 MainWindow::~MainWindow() {
 }
+
 MainWindow::MainWindow(QWidget *parent)
-        : QMainWindow(parent)
-{
+        : QMainWindow(parent) {
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
@@ -25,15 +25,15 @@ MainWindow::MainWindow(QWidget *parent)
     rightLayout->addWidget(imageLabel);
 
     setWindowTitle("Ray Tracer Renderer");
-    resize(1400, 900); // 修改初始窗口大小
+    resize(1200, 800); // 修改初始窗口大小
     setMinimumSize(300, 200);
     useOpenMP = true; // 默认使用 OpenMP
     // 连接信号和槽
     connect(this, SIGNAL(renderTimeUpdated(qint64)), this, SLOT(updateRenderTime(qint64)), Qt::QueuedConnection);
+    connect(this, SIGNAL(progressUpdated(int)), this, SLOT(handleProgressUpdate(int)), Qt::QueuedConnection);
 }
 
-void MainWindow::createRendererUI(QVBoxLayout *leftLayout)
-{
+void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
 
     sceneLayout = new QHBoxLayout();
     sceneLabel = new QLabel("Scene:", this);
@@ -66,6 +66,14 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout)
     samplesLayout->addWidget(samplesLabel);
     samplesLayout->addWidget(samplesSpinBox);
 
+    // 在复选框和渲染按钮之间添加进度条
+    progressBar = new QProgressBar(this);
+    progressBar->setRange(0, 100); // 设置进度条的范围为0到100
+    progressBar->setTextVisible(true); // 显示进度文本
+    progressBar->setFormat("%v%"); // 设置进度文本格式
+    progressBar->setValue(0); // 设置初始值为0
+
+
     renderButton = new QPushButton("Render", this);
     connect(renderButton, &QPushButton::clicked, this, &MainWindow::startRendering);
 
@@ -76,7 +84,7 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout)
     outputTextEdit->setReadOnly(true);
 
     // 添加复选框并连接到 toggleOpenMP() 槽
-    QCheckBox *openMPCheckbox = new QCheckBox("Use OpenMP", this);
+    auto *openMPCheckbox = new QCheckBox("Use OpenMP", this);
     openMPCheckbox->setChecked(true); // 添加这一行，设置复选框默认选中
     connect(openMPCheckbox, &QCheckBox::toggled, this, &MainWindow::toggleOpenMP);
 
@@ -85,107 +93,15 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout)
     leftLayout->addLayout(methodLayout);
     leftLayout->addLayout(samplesLayout);
     leftLayout->addWidget(openMPCheckbox);
+    leftLayout->addWidget(progressBar);
     leftLayout->addWidget(renderButton);
     leftLayout->addWidget(outputTextEdit);
     leftLayout->addWidget(clearOutputButton);
 }
 
-
 // Protected
 
-void MainWindow::clearOutput()
-{
-    outputTextEdit->clear();
-}
-
-void MainWindow::renderInBackground(const std::string& filename)
-{
-    int sceneChoice = sceneComboBox->currentIndex();
-    int samples = samplesSpinBox->value();
-    int methodChoice = methodComboBox->currentIndex();
-    Scene scene;
-    switch (sceneChoice) {
-        case 0:
-            cornell_box(scene);
-            break;
-        case 1:
-            cornell_specular(scene);
-            break;
-        case 2:
-            cornell_glass(scene);
-            break;
-        case 3:
-            cornell_smoke(scene);
-            break;
-        case 4:
-            final_scene(scene);
-            break;
-        default:
-            cornell_box(scene);
-            break;
-    }
-
-    SampleMethod sm;
-    switch (methodChoice) {
-        case 0:
-            sm = SampleMethod::BRDF;
-            break;
-        case 1:
-            sm = SampleMethod::Light;
-            break;
-        case 2:
-            sm = SampleMethod::Mixture;
-            break;
-        case 3:
-            sm = SampleMethod::NEE;
-            break;
-        case 4:
-            sm = SampleMethod::MIS;
-            break;
-        default:
-            sm = SampleMethod::BRDF;
-            break;
-    }
-
-    RayTracer myRender(scene);
-    // Connect the RenderEngine's signal to the MainWindow's slot
-//    connect(&myRender, SIGNAL(updateProgress(int)), this, SLOT(handleProgressUpdate(int)), Qt::QueuedConnection);
-    // 开始计时
-    QElapsedTimer timer;
-    timer.start();
-
-    //渲染
-    myRender.render(samples, sm, filename, useOpenMP);
-
-    // 停止计时并获取所用时间
-    qint64 elapsedTime = timer.elapsed();
-    emit renderTimeUpdated(elapsedTime);
-
-    // 加载显示图像
-    originalPixmap = QPixmap(filename.c_str());
-    imageLabel->setAlignment(Qt::AlignCenter);
-    updateImageLabel();
-
-}
-
-void MainWindow::resizeEvent(QResizeEvent* event)
-{
-    QMainWindow::resizeEvent(event);
-    updateImageLabel();
-}
-
-void MainWindow::updateImageLabel()
-{
-    if (!originalPixmap.isNull()) {
-        imageLabel->setPixmap(originalPixmap.scaled(imageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    }
-}
-
-
-//Slots
-
-void MainWindow::startRendering()
-{
+void MainWindow::startRendering() {
     int sceneChoice = sceneComboBox->currentIndex();
     int samples = samplesSpinBox->value();
     int methodChoice = methodComboBox->currentIndex();
@@ -237,20 +153,106 @@ void MainWindow::startRendering()
 
 
     // 将渲染结果显示在 outputTextEdit 中
-    QString output = QString("Rendered scene: %1\n%2 samples per pixel\n%3 method.").arg(sceneName).arg(samples).arg(methodNam);
+    QString output = QString("Rendered scene: %1\n%2 samples per pixel\n%3 method.").arg(sceneName).arg(samples).arg(
+            methodNam);
     outputTextEdit->append(output);
 
-    const char* filename = "./output/img.png";
-    QFuture<void> future = QtConcurrent::run(this, &MainWindow::renderInBackground,std::string(filename));
+    const char *filename = "./output/img.png";
+    QFuture<void> future = QtConcurrent::run(this, &MainWindow::renderInBackground, std::string(filename));
 }
 
+void MainWindow::renderInBackground(const std::string &filename) {
+    int sceneChoice = sceneComboBox->currentIndex();
+    int samples = samplesSpinBox->value();
+    int methodChoice = methodComboBox->currentIndex();
+    Scene scene;
+    switch (sceneChoice) {
+        case 0:
+            cornell_box(scene);
+            break;
+        case 1:
+            cornell_specular(scene);
+            break;
+        case 2:
+            cornell_glass(scene);
+            break;
+        case 3:
+            cornell_smoke(scene);
+            break;
+        case 4:
+            final_scene(scene);
+            break;
+        default:
+            cornell_box(scene);
+            break;
+    }
 
+    SampleMethod sm;
+    switch (methodChoice) {
+        case 0:
+            sm = SampleMethod::BRDF;
+            break;
+        case 1:
+            sm = SampleMethod::Light;
+            break;
+        case 2:
+            sm = SampleMethod::Mixture;
+            break;
+        case 3:
+            sm = SampleMethod::NEE;
+            break;
+        case 4:
+            sm = SampleMethod::MIS;
+            break;
+        default:
+            sm = SampleMethod::BRDF;
+            break;
+    }
+
+//    RayTracer myRender(scene);
+    myRender.ChangeScene(scene);
+    myRender.setProgressCallback([this](int progress) {
+        emit progressUpdated(progress);
+    });
+    // Connect the RenderEngine's signal to the MainWindow's slot
+//    connect(&myRender, SIGNAL(updateProgress(int)), this, SLOT(handleProgressUpdate(int)), Qt::QueuedConnection);
+    // 开始计时
+    QElapsedTimer timer;
+    timer.start();
+
+    //渲染
+    myRender.render(samples, sm, filename, useOpenMP);
+
+    // 停止计时并获取所用时间
+    qint64 elapsedTime = timer.elapsed();
+    emit renderTimeUpdated(elapsedTime);
+
+    // 加载显示图像
+    originalPixmap = QPixmap(filename.c_str());
+    imageLabel->setAlignment(Qt::AlignCenter);
+    updateImageLabel();
+
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    QMainWindow::resizeEvent(event);
+    updateImageLabel();
+}
+
+void MainWindow::updateImageLabel() {
+    if (!originalPixmap.isNull()) {
+        imageLabel->setPixmap(originalPixmap.scaled(imageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+}
+
+void MainWindow::clearOutput() {
+    outputTextEdit->clear();
+}
 void MainWindow::toggleOpenMP(bool checked) {
     useOpenMP = checked;
 }
 
-void MainWindow::updateRenderTime(qint64 elapsedTime)
-{
+void MainWindow::updateRenderTime(qint64 elapsedTime) {
     // 将毫秒转换为分钟和秒
     int seconds = static_cast<int>(elapsedTime / 1000); // 转换为整数秒
     int minutes = seconds / 60; // 计算分钟数
@@ -262,5 +264,6 @@ void MainWindow::updateRenderTime(qint64 elapsedTime)
 
 void MainWindow::handleProgressUpdate(int progress) {
     // 在此处处理进度更新，例如更新进度条或在输出中显示进度
-    outputTextEdit->append(QString("Progress: %1%").arg(progress));
+    progressBar->setValue(progress); // 更新进度条的值
+//    outputTextEdit->append(QString("Progress: %1%").arg(progress));
 }

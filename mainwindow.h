@@ -21,7 +21,8 @@
 #include <QCheckBox>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
-
+#include <QProgressBar>
+#include "RenderEngine.h"
 //#include "RayTracer.h"
 //#include "Scene.h"
 class MainWindow : public QMainWindow {
@@ -43,6 +44,7 @@ protected:
 
     void updateImageLabel();
 
+
 private slots:
 
     void startRendering();
@@ -55,6 +57,8 @@ private slots:
 
 signals:
     void renderTimeUpdated(qint64 elapsedTime);
+    void progressUpdated(int progress);
+
 private:
     QVBoxLayout *mainLayout;
     QHBoxLayout *sceneLayout;
@@ -69,12 +73,13 @@ private:
     QComboBox *methodComboBox;
     QPushButton *renderButton;
     QPushButton *clearOutputButton;
-
+    QProgressBar *progressBar;
     QTextEdit *outputTextEdit;
     QLabel *imageLabel;
     QPixmap originalPixmap;
 private:
     bool useOpenMP;
+    RenderEngine myRender;
 };
 
 #endif

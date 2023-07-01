@@ -24,21 +24,22 @@ set(CMAKE_PREFIX_PATH "D:/Qt/5.15.2/mingw81_64")
 ### Example
 
 If you don't want to use Qt as the framework, just go to [example](./example) and run `run.bat`
-in WINDOWS OS.
+in **WINDOWS OS**.
 
 ### OpenMP
 
-The Render is accelerated by OpenMP. Make sure your compiler support it.
+The Render is accelerated by **OpenMP**. Make sure your compiler support it.
 
-## Cornell Box
+## Result
 
 <div align="center">
-
-![Cornell Box](./img.png)
-
+    <img src="./output/default.png" width="400" title="Cornell Box">
+    <div style="">
+        Figure 1: Cornell Box
+    </div>
 </div>
 
-## reference
+## Reference
 
 - [raytracing in one week](https://raytracing.github.io/)
 - [PBRT3](https://pbr-book.org/3ed-2018/contents)

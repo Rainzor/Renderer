@@ -50,7 +50,7 @@ inline double clamp(double x, double min, double max) {
 
 // Common Headers
 
-// #include "vec3.h"
+#include "vec3.h"
 #include "ray.h"
-
+#include "vec2.h"
 #endif

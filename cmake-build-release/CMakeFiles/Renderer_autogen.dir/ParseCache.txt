@@ -16,6 +16,7 @@ D:/CG/Rendering/Renderer/mainwindow.h
  mdp:D:/CG/Rendering/Renderer/include/common/ray.h
  mdp:D:/CG/Rendering/Renderer/include/common/rtw_stb_image.h
  mdp:D:/CG/Rendering/Renderer/include/common/texture.h
+ mdp:D:/CG/Rendering/Renderer/include/common/vec2.h
  mdp:D:/CG/Rendering/Renderer/include/common/vec3.h
  mdp:D:/CG/Rendering/Renderer/include/external/stb_image.h
  mdp:D:/CG/Rendering/Renderer/include/external/stb_image_write.h

@@ -99,7 +99,7 @@ color RayTracer::BRDF_sample(const ray &r)const {
     hit_record rec;
     // If the ray hits nothing, return the background color.
     if (!scene.world.hit(r, 0.001, infinity, rec))
-        return scene.background;
+        return scene.background->value(r);
 
     scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
@@ -129,7 +129,7 @@ color RayTracer::light_sample(const ray &r) const {
     hit_record rec;
     // If the ray hits nothing, return the background color.
     if (!scene.world.hit(r, 0.001, infinity, rec))
-        return scene.background;
+        return scene.background->value(r);
 
     scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
@@ -167,7 +167,7 @@ color RayTracer::Mixture_sample(const ray &r) const {
 
     // If the ray hits nothing, return the background color.
     if (!scene.world.hit(r, 0.001, infinity, rec))
-        return scene.background;
+        return scene.background->value(r);
 
     scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
@@ -200,7 +200,7 @@ color RayTracer::NEE_sample(const ray &r,int depth,bool is_shadow) const {
     float p_RR = 0.95;                        // 概率反射系数
 
     if (!scene.world.hit(r, 0.0001, infinity, rec)) // 在0-infinity范围内找最近邻的表面
-        return scene.background;
+        return scene.background->value(r);
     //srec 用于记录该材质的散射信息，包括衰减系数，散射光线方向分布，是否为镜面反射
     struct scatter_record srec;
 
@@ -290,7 +290,7 @@ color RayTracer::Muliti_Importance_sample(const ray &r,int depth, double emitted
     struct hit_record rec;
     color result;
     if (!scene.world.hit(r, 0.001, infinity, rec)) { // 在0-infinity范围内找最近邻的表面
-        return scene.background * emitted_weight;
+        return scene.background->value(r) * emitted_weight;
     }
     //srec 用于记录该材质的散射信息，包括衰减系数，散射光线方向分布，是否为镜面反射
     struct scatter_record srec;

@@ -22,7 +22,7 @@
 #include "sphere.h"
 #include "participate_medium.h"
 typedef struct Scene{
-    color background;
+    shared_ptr<texture> background;
     hittable_list world;
     shared_ptr<hittable_list> lights;
     shared_ptr<camera> cam;

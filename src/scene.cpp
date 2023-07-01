@@ -1,7 +1,7 @@
 #include "scene.h"
 void cornell_box(Scene& scene){
     //BACKGROUND
-    scene.background = color(0, 0, 0);
+    scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
     //WORLD
     hittable_list objects;
@@ -48,7 +48,7 @@ void cornell_box(Scene& scene){
 }
 
 void cornell_specular(Scene& scene){
-    scene.background = color(0, 0, 0);
+    scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
     hittable_list objects;
     auto red = make_shared<lambertian>(color(.65, .05, .05));
@@ -98,7 +98,7 @@ void cornell_specular(Scene& scene){
 }
 
 void cornell_glass(Scene &scene){
-    scene.background = color(0, 0, 0);
+    scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
     hittable_list objects;
 
@@ -145,7 +145,7 @@ void cornell_glass(Scene &scene){
 }
 
 void cornell_smoke(Scene &scene){
-    scene.background = color(0, 0, 0);
+    scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
     hittable_list objects;
 
@@ -196,7 +196,7 @@ void cornell_smoke(Scene &scene){
 }
 
 void final_scene(Scene &scene){
-    scene.background = color(0, 0, 0);
+    scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
     hittable_list boxes1;
     auto ground = make_shared<lambertian>(color(0.48, 0.83, 0.53));

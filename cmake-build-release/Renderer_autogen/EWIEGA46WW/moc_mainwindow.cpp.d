@@ -1,5 +1,31 @@
 D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mainwindow.cpp: D:/CG/Rendering/Renderer/mainwindow.h \
   D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/moc_predefs.h \
+  D:/CG/Rendering/Renderer/include/RenderEngine.h \
+  D:/CG/Rendering/Renderer/include/common/aabb.h \
+  D:/CG/Rendering/Renderer/include/common/camera.h \
+  D:/CG/Rendering/Renderer/include/common/color.h \
+  D:/CG/Rendering/Renderer/include/common/common.h \
+  D:/CG/Rendering/Renderer/include/common/material.h \
+  D:/CG/Rendering/Renderer/include/common/onb.h \
+  D:/CG/Rendering/Renderer/include/common/perlin.h \
+  D:/CG/Rendering/Renderer/include/common/ray.h \
+  D:/CG/Rendering/Renderer/include/common/rtw_stb_image.h \
+  D:/CG/Rendering/Renderer/include/common/texture.h \
+  D:/CG/Rendering/Renderer/include/common/vec2.h \
+  D:/CG/Rendering/Renderer/include/common/vec3.h \
+  D:/CG/Rendering/Renderer/include/external/stb_image.h \
+  D:/CG/Rendering/Renderer/include/external/stb_image_write.h \
+  D:/CG/Rendering/Renderer/include/scene.h \
+  D:/CG/Rendering/Renderer/include/shapes/aarect.h \
+  D:/CG/Rendering/Renderer/include/shapes/box.h \
+  D:/CG/Rendering/Renderer/include/shapes/bvh.h \
+  D:/CG/Rendering/Renderer/include/shapes/constant_medium.h \
+  D:/CG/Rendering/Renderer/include/shapes/hittable.h \
+  D:/CG/Rendering/Renderer/include/shapes/hittable_list.h \
+  D:/CG/Rendering/Renderer/include/shapes/moving_sphere.h \
+  D:/CG/Rendering/Renderer/include/shapes/participate_medium.h \
+  D:/CG/Rendering/Renderer/include/shapes/pdf.h \
+  D:/CG/Rendering/Renderer/include/shapes/sphere.h \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/QtConcurrent \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/QtConcurrentDepends \
   D:/Qt/5.15.2/mingw81_64/include/QtConcurrent/qtconcurrent_global.h \
@@ -256,6 +282,7 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QHBoxLayout \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QLabel \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QMainWindow \
+  D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QProgressBar \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QPushButton \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QScrollArea \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/QSpinBox \
@@ -276,6 +303,7 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qlayout.h \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qlayoutitem.h \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qmainwindow.h \
+  D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qprogressbar.h \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qpushbutton.h \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qrubberband.h \
   D:/Qt/5.15.2/mingw81_64/include/QtWidgets/qscrollarea.h \
@@ -326,6 +354,7 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/hash_bytes.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/invoke.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/ios_base.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/istream.tcc \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/iterator_concepts.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/list.tcc \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/locale_classes.h \
@@ -389,6 +418,7 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/uses_allocator_args.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/vector.tcc \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/cctype \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/chrono \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/clocale \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/cmath \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/compare \
@@ -414,10 +444,13 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/initializer_list \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ios \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/iosfwd \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/iostream \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/istream \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/iterator \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/limits \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/list \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/map \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/math.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/memory \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/mutex \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/new \
@@ -434,6 +467,7 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/streambuf \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/string \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/string_view \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/thread \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/tr1/bessel_function.tcc \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/tr1/beta_function.tcc \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/tr1/ell_integral.tcc \
@@ -462,9 +496,14 @@ D:/CG/Rendering/Renderer/cmake-build-release/Renderer_autogen/EWIEGA46WW/moc_mai
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/gthr-default.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/gthr.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/os_defines.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/emmintrin.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/mm_malloc.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/mmintrin.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/omp.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stdarg.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stddef.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stdint.h \
+  F:/JetBrains/CLion\ 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/xmmintrin.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/x86_64-w64-mingw32/include/_mingw.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/x86_64-w64-mingw32/include/_mingw_mac.h \
   F:/JetBrains/CLion\ 2023.1.3/bin/mingw/x86_64-w64-mingw32/include/_mingw_off_t.h \

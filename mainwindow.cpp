@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     resize(1200, 800); // 修改初始窗口大小
     setMinimumSize(300, 200);
     useOpenMP = true; // 默认使用 OpenMP
+    renderingInProgress = false; // 默认渲染未开始
     // 连接信号和槽
     connect(this, SIGNAL(renderTimeUpdated(qint64)), this, SLOT(updateRenderTime(qint64)), Qt::QueuedConnection);
     connect(this, SIGNAL(progressUpdated(int)), this, SLOT(handleProgressUpdate(int)), Qt::QueuedConnection);
@@ -63,7 +64,7 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     samplesSpinBox = new QSpinBox(this);
     samplesSpinBox->setMinimum(1);
     samplesSpinBox->setMaximum(1000);
-    samplesSpinBox->setValue(16);
+    samplesSpinBox->setValue(8);
     samplesLayout->addWidget(samplesLabel);
     samplesLayout->addWidget(samplesSpinBox);
 
@@ -103,6 +104,14 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
 // Protected
 
 void MainWindow::startRendering() {
+
+    if (renderingInProgress) {
+        return;
+    }
+    renderingInProgress = true;
+    renderButton->setEnabled(false);
+
+
     int sceneChoice = sceneComboBox->currentIndex();
     int samples = samplesSpinBox->value();
     int methodChoice = methodComboBox->currentIndex();
@@ -163,6 +172,13 @@ void MainWindow::startRendering() {
 
     const char *filename = "../output/img.png";
     QFuture<void> future = QtConcurrent::run(this, &MainWindow::renderInBackground, std::string(filename));
+    // 在渲染完成后重新启用按钮
+    auto *watcher = new QFutureWatcher<void>();
+    connect(watcher, &QFutureWatcher<void>::finished, this, [this]() {
+        renderButton->setEnabled(true);
+        renderingInProgress = false;
+    });
+    watcher->setFuture(future);
 }
 
 void MainWindow::renderInBackground(const std::string &filename) {

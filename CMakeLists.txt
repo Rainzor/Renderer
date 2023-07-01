@@ -39,17 +39,13 @@ include_directories(
 
 
 file(GLOB_RECURSE SOURCE_FILES
-        "main.cpp"
-        "mainwindow.cpp"
-        "src/*.cpp"
-        )
-file(GLOB_RECURSE EXAMPLE_FILES
-        "./example/example.cpp"
         "src/*.cpp"
         )
 
-add_executable(Renderer ${SOURCE_FILES})
-add_executable(Example ${SOURCE_FILES})
+add_executable(Renderer main.cpp mainwindow.cpp ${SOURCE_FILES})
+add_executable(Example ./example/example.cpp ${SOURCE_FILES})
+
+
 target_link_libraries(Renderer
         Qt5::Core
         Qt5::Gui

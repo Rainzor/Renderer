@@ -23,14 +23,20 @@ set(CMAKE_PREFIX_PATH "D:/Qt/5.15.2/mingw81_64")
 ````
 ### Example
 
-If you don't want to use Qt as framework, just go to [example](./example) and run `run.bat`
+If you don't want to use Qt as the framework, just go to [example](./example) and run `run.bat`
 in WINDOWS OS.
 
 ### OpenMP
 
 The Render is accelerated by OpenMP. Make sure your compiler support it.
 
+## Cornell Box
 
+<div align="center">
+
+![Cornell Box](./img.png)
+
+</div>
 
 ## reference
 

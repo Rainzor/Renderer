@@ -34,6 +34,6 @@ int main(){
 //    std::cin>>samples_per_pixel;
 //    std::cout<<std::endl;
 
-    rayTracer.render(16, SampleMethod::BRDF, img_name);
+    rayTracer.render(8, SampleMethod::BRDF, img_name, false);
     return 0;
 }

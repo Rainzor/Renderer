@@ -79,6 +79,7 @@ private:
     QPixmap originalPixmap;
 private:
     bool useOpenMP;
+    bool renderingInProgress;
     RenderEngine myRender;
 };
 

@@ -74,30 +74,34 @@ class translate: public hittable {
 };
 
 //旋转
-class rotate_y : public hittable {
-   public:
-    rotate_y(shared_ptr<hittable> p, double angle);
+enum class Axis { X, Y, Z };
+
+class rotate : public hittable {
+public:
+    rotate(shared_ptr<hittable> p, double angle, Axis axis);
 
     virtual bool hit(
-        const ray& r,
-        double t_min,
-        double t_max,
-        hit_record& rec) const override;
+            const ray& r,
+            double t_min,
+            double t_max,
+            hit_record& rec) const override;
 
     virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
         output_box = bbox;
         return hasbox;
     }
-    virtual void getMaterial(shared_ptr<material>& mptr) const override{
+    virtual void getMaterial(shared_ptr<material>& mptr) const override {
         ptr->getMaterial(mptr);
     }
-   public:
+public:
     shared_ptr<hittable> ptr;
     double sin_theta;
     double cos_theta;
     bool hasbox;
     aabb bbox;
+    Axis axis;
 };
+
 
 //翻转：改变材料的内外朝向，最直接的应用是对于无限大平面，可以通过翻转法向量来改变平面的朝向
 class flip_face : public hittable {

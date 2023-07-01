@@ -43,8 +43,12 @@ file(GLOB_RECURSE SOURCE_FILES
         "mainwindow.cpp"
         "src/*.cpp"
         )
-
+file(GLOB_RECURSE TEST_FILES
+        "test.cpp"
+        "src/*.cpp"
+        )
 add_executable(Renderer ${SOURCE_FILES})
+add_executable(Test ${TEST_FILES})
 
 target_link_libraries(Renderer
         Qt5::Core

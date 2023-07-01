@@ -18,12 +18,12 @@ void cornell_box(Scene& scene){
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
     //粗糙材质
     shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<rotate>(box1, 15,Axis::Y);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
     objects.add(box1);
 
     shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<rotate>(box2, -18,Axis::Y);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
     objects.add(box2);
     scene.world = objects;
@@ -66,13 +66,13 @@ void cornell_specular(Scene& scene){
 //   金属材质
     shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
     shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), aluminum);
-    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<rotate>(box1, 15,Axis::Y);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
     objects.add(box1);
 
     //粗糙材质
     shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<rotate>(box2, -18,Axis::Y);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
     objects.add(box2);
     scene.world = objects;
@@ -115,7 +115,7 @@ void cornell_glass(Scene &scene){
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
     //粗糙材质
     shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<rotate>(box1, 15,Axis::Y);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
     objects.add(box1);
     //添加一个玻璃球
@@ -164,11 +164,11 @@ void cornell_smoke(Scene &scene){
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
     shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 330, 165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<rotate>(box1, 15,Axis::Y);
     box1 = make_shared<translate>(box1, vecf3(265, 0, 295));
 
     shared_ptr<hittable> box2 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<rotate>(box2, -18,Axis::Y);
     box2 = make_shared<translate>(box2, vecf3(130, 0, 65));
 
     objects.add(make_shared<constant_medium>(box1, 0.01, color(0.1,0.1,0.1)));
@@ -252,8 +252,8 @@ void final_scene(Scene &scene){
     }
 
     objects.add(make_shared<translate>(
-            make_shared<rotate_y>(
-                    make_shared<bvh_node>(boxes2, 0.0, 1.0), 15),
+            make_shared<rotate>(
+                    make_shared<bvh_node>(boxes2, 0.0, 1.0), 15,Axis::Y),
             vecf3(-100, 270, 395)));
 
     scene.world = objects;

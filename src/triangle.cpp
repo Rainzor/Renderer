@@ -2,66 +2,95 @@
 triangle::triangle(const pointf3& a, const pointf3& b, const pointf3& c, shared_ptr<material> m)
         : v0(a), v1(b), v2(c), mat_ptr(m) {
     // 计算三角形的法向量
-    normal = unit_vector(cross(v1 - v0, v2 - v0));
-    // 计算三角形的切向量
-    tangent = unit_vector(v1 - v0);
+    vn1 = unit_vector(cross(v1 - v0, v2 - v0));
+    vn2 = vn1;
+    vn3 = vn1;
 
-    // 计算三角形的纹理坐标
-    vecf3 edge1 = v1 - v0;
-    vecf3 edge2 = v2 - v1;
-    vecf3 edge3 = v0 - v2;
+    vt0 = texf2(0, 0);
+    vt1 = texf2(0, 1);
+    vt2 = texf2(1, 0);
 
-    float len1 = edge1.length();
-    float len2 = edge2.length();
-    float len3 = edge3.length();
-
-    float max_len = std::max(len1,std::max(len2, len3));
-    float angle_cos;
-    float angle_sin;
-    float remaining_len;
-    if (max_len == len1) {
-        uv0 = texf2 (0, 0);
-        uv1 = texf2 (0, 1);
-        angle_cos = dot(edge1, -edge3) / (len1 * len3);
-        angle_sin = sqrt(1 - angle_cos * angle_cos);
-        remaining_len = len3/len1;
-        uv2 = texf2 (remaining_len * angle_cos, remaining_len * angle_sin);
-    } else if (max_len == len2) {
-        uv1 = texf2(0, 0);
-        uv2 = texf2(0, 1);
-        angle_cos = dot(edge2, -edge1) / (len2 * len1);
-        angle_sin = sqrt(1 - angle_cos * angle_cos);
-        remaining_len = len1/len2;
-        uv0 = texf2(remaining_len * angle_cos, remaining_len * angle_sin);
-    } else {
-        uv2 = texf2(0, 0);
-        uv0 = texf2(0, 1);
-        angle_cos = dot(edge3, -edge2) / (len3 * len2);
-        angle_sin = sqrt(1 - angle_cos * angle_cos);
-        remaining_len = len2/len3;
-        uv1 = texf2(remaining_len * angle_cos, remaining_len * angle_sin);
-    }
+//    // 计算三角形的纹理坐标
+//    vecf3 edge1 = v1 - v0;
+//    vecf3 edge2 = v2 - v1;
+//    vecf3 edge3 = v0 - v2;
+//
+//    float len1 = edge1.length();
+//    float len2 = edge2.length();
+//    float len3 = edge3.length();
+//
+//    float max_len = std::max(len1,std::max(len2, len3));
+//    float angle_cos;
+//    float angle_sin;
+//    float remaining_len;
+//    if (max_len == len1) {
+//        vt0 = texf2 (0, 0);
+//        vt1 = texf2 (0, 1);
+//        angle_cos = dot(edge1, -edge3) / (len1 * len3);
+//        angle_sin = sqrt(1 - angle_cos * angle_cos);
+//        remaining_len = len3/len1;
+//        vt2 = texf2 (remaining_len * angle_cos, remaining_len * angle_sin);
+//    } else if (max_len == len2) {
+//        vt1 = texf2(0, 0);
+//        vt2 = texf2(0, 1);
+//        angle_cos = dot(edge2, -edge1) / (len2 * len1);
+//        angle_sin = sqrt(1 - angle_cos * angle_cos);
+//        remaining_len = len1/len2;
+//        vt0 = texf2(remaining_len * angle_cos, remaining_len * angle_sin);
+//    } else {
+//        vt2 = texf2(0, 0);
+//        vt0 = texf2(0, 1);
+//        angle_cos = dot(edge3, -edge2) / (len3 * len2);
+//        angle_sin = sqrt(1 - angle_cos * angle_cos);
+//        remaining_len = len2/len3;
+//        vt1 = texf2(remaining_len * angle_cos, remaining_len * angle_sin);
+//    }
 };
 
-triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2> &textures, shared_ptr<material> m) {
-    if (vertexes.size() != 3 || textures.size() != 2) {
-        std::cerr << "Error When Loading Triangle" << std::endl;
+triangle::triangle(const std::vector<pointf3> &vertexes, shared_ptr<material> m) {
+    if(vertexes.size() != 3){
+        std::cerr << "triangle: vertexes.size() != 3" << std::endl;
         exit(1);
+    } else {
+        triangle(vertexes[0], vertexes[1], vertexes[2], m);
     }
-    v0 = vertexes[0];
-    v1 = vertexes[1];
-    v2 = vertexes[2];
-    uv0 = textures[0];
-    uv1 = textures[1];
-    uv2 = textures[2];
-    mat_ptr = m;
-
-    // 计算三角形的法向量
-    normal = unit_vector(cross(v1 - v0, v2 - v0));
-    // 计算三角形的切向量
-    tangent = unit_vector(v1 - v0);
 }
 
+triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2> &textures, shared_ptr<material> m) {
+    if(textures.empty())
+        triangle(vertexes, m);
+    else {
+        v0 = vertexes[0];
+        v1 = vertexes[1];
+        v2 = vertexes[2];
+        vt0 = textures[0];
+        vt1 = textures[1];
+        vt2 = textures[2];
+        mat_ptr = m;
+
+        // 计算三角形的法向量
+        vn1 = unit_vector(cross(v1 - v0, v2 - v0));
+        vn2 = vn1;
+        vn3 = vn1;
+    }
+}
+
+triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2> &textures, const std::vector<vecf3> &normals, shared_ptr<material> m) {
+    if(normals.empty())
+        triangle(vertexes, textures, m);
+    else {
+        v0 = vertexes[0];
+        v1 = vertexes[1];
+        v2 = vertexes[2];
+        vt0 = textures[0];
+        vt1 = textures[1];
+        vt2 = textures[2];
+        vn1 = normals[0];
+        vn2 = normals[1];
+        vn3 = normals[2];
+        mat_ptr = m;
+    }
+}
 
 bool triangle::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
     // 使用 Möller-Trumbore 算法计算三角形与光线的交点
@@ -104,6 +133,7 @@ bool triangle::hit(const ray& r, double t_min, double t_max, hit_record& rec) co
     rec.p = r.at(t);
     get_triangle_uv(weight,rec.u, rec.v);
     rec.mat_ptr = mat_ptr;
+    vecf3 normal = unit_vector(weight.x() * vn1 + weight.y() * vn2 + weight.z() * vn3);
     rec.set_face_normal(r, normal);
 
     return true;

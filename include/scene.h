@@ -34,10 +34,15 @@ typedef struct Scene{
 
 
 void cornell_box(Scene& scene);
+
 void cornell_specular(Scene& scene);
 
 void cornell_glass(Scene &scene);
+
 void cornell_triangle(Scene &scene);
+
+void cornell_mesh_objects(Scene &scene);
+
 void cornell_smoke(Scene &scene);
 
 void final_scene(Scene &scene);

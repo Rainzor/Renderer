@@ -43,8 +43,8 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     sceneComboBox->addItem("Mirror");
     sceneComboBox->addItem("Glass Ball");
     sceneComboBox->addItem("Triangle");
+    sceneComboBox->addItem("David&Bunny");
     sceneComboBox->addItem("Smoke");
-    sceneComboBox->addItem("Final Scene");
     sceneLayout->addWidget(sceneLabel);
     sceneLayout->addWidget(sceneComboBox);
 
@@ -133,10 +133,10 @@ void MainWindow::startRendering() {
             sceneName = "Triangle";
             break;
         case 4:
-            sceneName = "Clouds";
+            sceneName = "David and Bunny";
             break;
         case 5:
-            sceneName = "Final Scene";
+            sceneName = "Clouds";
             break;
         default:
             sceneName = "Cornell Box";
@@ -166,7 +166,7 @@ void MainWindow::startRendering() {
 
 
     // 将渲染结果显示在 outputTextEdit 中
-    QString output = QString("Rendered scene: %1\n%2 samples per pixel\n%3 method.").arg(sceneName).arg(samples).arg(
+    QString output = QString("Scene: %1\n%2 samples per pixel\n%3 method.").arg(sceneName).arg(samples).arg(
             methodNam);
     outputTextEdit->append(output);
 
@@ -200,10 +200,10 @@ void MainWindow::renderInBackground(const std::string &filename) {
             cornell_triangle(scene);
             break;
         case 4:
-            cornell_smoke(scene);
+            cornell_mesh_objects(scene);
             break;
         case 5:
-            final_scene(scene);
+            cornell_smoke(scene);
             break;
         default:
             cornell_box(scene);

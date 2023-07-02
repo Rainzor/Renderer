@@ -34,6 +34,6 @@ int main(){
 //    std::cin>>samples_per_pixel;
 //    std::cout<<std::endl;
 
-    rayTracer.render(8, SampleMethod::NEE, img_name, true);
+    rayTracer.render(8, SampleMethod::MIS, img_name, true);
     return 0;
 }

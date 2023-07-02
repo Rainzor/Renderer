@@ -47,8 +47,10 @@ rotate::rotate(shared_ptr<hittable> p, double angle, Axis axis)
                     if (c == static_cast<size_t>(axis)) {
                         auto c1 = (c + 1) % 3;
                         auto c2 = (c + 2) % 3;
-                        tester[c1] = cos_theta * tester[c1] - sin_theta * tester[c2];
-                        tester[c2] = sin_theta * tester[c1] + cos_theta * tester[c2];
+                        float tmp1 = tester[c1];
+                        float tmp2 = tester[c2];
+                        tester[c1] = cos_theta * tmp1 - sin_theta * tmp2;
+                        tester[c2] = sin_theta * tmp1 + cos_theta * tmp2;
                     }
                 }
 

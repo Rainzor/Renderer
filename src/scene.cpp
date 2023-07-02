@@ -143,6 +143,7 @@ void cornell_glass(Scene &scene){
     scene.width = image_width;
     scene.height = image_height;
 }
+
 void cornell_triangle(Scene &scene){
     scene.background = make_shared<solid_color>(0,0,0);
 
@@ -204,6 +205,63 @@ void cornell_triangle(Scene &scene){
     scene.width = image_width;
     scene.height = image_height;
 }
+
+void cornell_mesh_objects(Scene &scene){
+    //BACKGROUND
+    scene.background = make_shared<solid_color>(0,0,0);
+
+    //WORLD
+    hittable_list objects;
+    auto red = make_shared<lambertian>(color(.65, .05, .05));
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto blue = make_shared<lambertian>(color(0.2, 0.4, 0.9));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(113, 443, 127, 432, 554, light)));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+    //粗糙材质
+
+    std::string obj_filename1 = "../data/David328.obj";
+    shared_ptr<hittable> mesh1 = make_shared<mesh_triangle>(obj_filename1,white,30);
+    mesh1 = make_shared<rotate>(mesh1, -90,Axis::X);
+    mesh1 = make_shared<rotate>(mesh1, 15,Axis::Y);
+    vecf3 translation_vector1(375, 130, 325);
+    mesh1 = make_shared<translate>(mesh1, translation_vector1);
+    objects.add(make_shared<bvh_node>(mesh1, 0.0, 1.0));
+
+    std::string obj_filename2 = "../data/Bunny_head.obj";
+    shared_ptr<hittable> mesh2 = make_shared<mesh_triangle>(obj_filename2,white,2500);
+    mesh2 = make_shared<rotate>(mesh2, -180,Axis::Y);
+    vecf3 translation_vector2(120, 120, 235);
+    mesh2 = make_shared<translate>(mesh2, translation_vector2);
+    objects.add(make_shared<bvh_node>(mesh2, 0.0, 1.0));
+    scene.world = objects;
+
+
+    //LIGHTS
+    scene.lights = make_shared<hittable_list>();
+    scene.lights->add(make_shared<xz_rect>(113, 443, 127, 432, 554, shared_ptr<material>()));
+
+    //CAMERA
+    double aspect_ratio = 1.0;
+    int image_width = 600;
+    pointf3 lookfrom(278, 278, -800);
+    pointf3 lookat(278, 278, 0);
+    double vfov = 40.0;
+    double aperture = 0.0;
+    vecf3 vup(0, 1, 0);
+    auto dist_to_focus = 10.0;
+    int image_height = static_cast<int>(image_width / aspect_ratio);
+    scene.cam = make_shared<camera>(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    scene.width = image_width;
+    scene.height = image_height;
+}
+
 void cornell_smoke(Scene &scene){
     scene.background = make_shared<solid_color>(color(0, 0, 0)) ;
 
@@ -238,7 +296,7 @@ void cornell_smoke(Scene &scene){
 
     //LIGHTS
     scene.lights = make_shared<hittable_list>();
-    scene.lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
+    scene.lights->add(make_shared<xz_rect>(113, 443, 127, 432, 554, shared_ptr<material>()));
 
     //CAMERA
     double aspect_ratio = 1.0;
@@ -338,7 +396,7 @@ void final_scene(Scene &scene){
 }
 
 void test_scene(Scene & scene){
-//BACKGROUND
+    //BACKGROUND
     scene.background = make_shared<solid_color>(0,0,0);
 
     //WORLD
@@ -357,29 +415,22 @@ void test_scene(Scene & scene){
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
     //粗糙材质
 
-    shared_ptr<hittable> box1 = make_shared<box>(pointf3(0, 0, 0), pointf3(165, 165, 165), white);
-    box1 = make_shared<rotate>(box1, -18,Axis::Y);
-    box1 = make_shared<translate>(box1, vecf3(130, 0, 65));
-    objects.add(box1);
+    std::string obj_filename1 = "../data/David328.obj";
+    shared_ptr<hittable> mesh1 = make_shared<mesh_triangle>(obj_filename1,white,30);
+    mesh1 = make_shared<rotate>(mesh1, -90,Axis::X);
+    mesh1 = make_shared<rotate>(mesh1, 15,Axis::Y);
+    vecf3 translation_vector1(375, 130, 325);
+    mesh1 = make_shared<translate>(mesh1, translation_vector1);
+    objects.add(make_shared<bvh_node>(mesh1, 0.0, 1.0));
 
-    pointf3 A(0, 0, 0);
-    pointf3 B(200, 0, 0);
-    pointf3 C(200, 0, 200*sqrt(3) / 2);
-    pointf3 D(200, 400*sqrt(2.0 / 3.0), 200*sqrt(3) / 6);
-
-    std::vector<pointf3> vertices{A,B,C,D};
-    std::vector<int> faces{0,1,2,0,2,3,0,3,1,1,3,2};
-
-    shared_ptr<hittable> mesh1 = make_shared<mesh_triangle>(vertices,faces,white);
-
-    float rotate_angle = 30;
-    vecf3 translation_vector(265, 0, 255);
-
-    mesh1 = make_shared<rotate>(mesh1, rotate_angle,Axis::Y);
-    mesh1 = make_shared<translate>(mesh1, translation_vector);
-
-    objects.add(mesh1);
+    std::string obj_filename2 = "../data/Bunny_head.obj";
+    shared_ptr<hittable> mesh2 = make_shared<mesh_triangle>(obj_filename2,white,2500);
+    mesh2 = make_shared<rotate>(mesh2, -180,Axis::Y);
+    vecf3 translation_vector2(120, 120, 235);
+    mesh2 = make_shared<translate>(mesh2, translation_vector2);
+    objects.add(make_shared<bvh_node>(mesh2, 0.0, 1.0));
     scene.world = objects;
+
 
     //LIGHTS
     scene.lights = make_shared<hittable_list>();

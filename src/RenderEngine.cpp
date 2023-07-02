@@ -42,7 +42,7 @@ void RenderEngine::render(int spp, SampleMethod method, const std::string &img_n
 #pragma omp critical
                 {
                     sum++;
-                    std::cout << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
+                    std::cerr << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
                     reportProgress();
                 }
             }
@@ -50,14 +50,14 @@ void RenderEngine::render(int spp, SampleMethod method, const std::string &img_n
     }
     else {
         sum = 0;
-        std::cout<<"Not OpenMP"<<std::endl;
+        std::cout<<"No OpenMP"<<std::endl;
         for (k = 0; k < width * height; k++) {
             j = k / width;
             i = k % height;
             img[k] = computePixelColor(i, j, spp, method);
             if (i == 0) {
                 sum++;
-                std::cout << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
+                std::cerr << "\rScanlines remaining: " << height - sum << ' ' << std::flush;
                 reportProgress();
             }
         }
@@ -68,11 +68,11 @@ void RenderEngine::render(int spp, SampleMethod method, const std::string &img_n
     auto end = high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<seconds>(end - start);
 
-    std::cout << std::endl << "Time Cost:"
+    std::cerr << std::endl << "Time Cost:"
               << duration.count() / 60 << "min"
               << duration.count() % 60 << "s" << std::endl;
-    std::cout << "Writing to " << img_name << std::endl;
-    std::cout << "Done." << std::endl;
+    std::cerr << "Writing to " << img_name << std::endl;
+    std::cerr << "Done.\n" << std::endl;
 
 }
 
@@ -236,18 +236,14 @@ color RenderEngine::NEE_sample(const ray &r, int depth, bool is_shadow) const {
 
     if (random_double() > p_RR)
         return color(0, 0, 0);
-
-    if (srec.is_specular) {
+    if (srec.is_specular||srec.is_refract) {
         return srec.attenuation * NEE_sample(srec.scatter_ray, depth, is_shadow) / p_RR;
     }
-    if (srec.is_refract) {
-        return srec.attenuation * NEE_sample(srec.scatter_ray, depth + 1, is_shadow) / p_RR;
-    }
-    //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
     if (is_shadow) {
         return color(0, 0, 0);
     }
 
+    //若光线没有追踪到光源，不是镜面反射，且是最后的shadow ray 则返回0
     //直接光照
     auto light_pdf_ptr = make_shared<hittable_pdf>(scene.lights, rec.p);
     vecf3 light_direction = unit_vector(light_pdf_ptr->generate());
@@ -285,13 +281,13 @@ color RenderEngine::NEE_sample(const ray &r, int depth, bool is_shadow) const {
     ray scatter_ray = ray(rec.p, scattered_direction, r.time());
     double p_indir = srec.pdf_ptr->value(scattered_direction);
     indirect_light = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scatter_ray)
-                     * NEE_sample(scatter_ray, depth + 1) / p_indir;
+                     * NEE_sample(scatter_ray, depth + 1, false) / p_indir;
 
     return emitted + (direct_light + indirect_light) / p_RR;
 }
 
 color RenderEngine::Muliti_Importance_sample(const ray &r, int depth, double emitted_weight, bool is_shadow) const {
-    //TODO:处理三角形面片
+
 
 //    if(depth>=max_depth)
 //        return color(0,0,0);

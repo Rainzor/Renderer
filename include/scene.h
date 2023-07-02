@@ -39,7 +39,7 @@ void cornell_specular(Scene& scene);
 
 void cornell_glass(Scene &scene);
 
-void cornell_triangle(Scene &scene);
+void cornell_triangle_glass(Scene &scene);
 
 void cornell_mesh_objects(Scene &scene);
 

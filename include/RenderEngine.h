@@ -9,16 +9,21 @@
 #include <thread>
 #include <atomic>
 #include "scene.h"
-#define NUM_THREADS 8 // 线程数
+#define NUM_THREADS  16// 线程数
 
 enum class SampleMethod {
-    BRDF = 1,
+    BRDF = 0,
+    Light = 1,
     Mixture = 2,
-    Light = 3,
-    NEE = 4,
-    MIS = 5
+    NEE = 3,
+    MIS = 4
 };
-
+//TODO: 0.DEBUG MIS,
+//TODO: 0.添加完整物体
+//TODO: 1.重构 BRDF 和 glass材质
+//TODO: 2.体渲染
+//TODO: 3.递归光线追踪--->迭代光线追踪
+//TODO: 4.三角形网格贴图参数化
 class RenderEngine{
 public:
     RenderEngine(Scene scene, int width, int height):

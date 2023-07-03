@@ -42,7 +42,7 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     sceneComboBox->addItem("Cornell Box");
     sceneComboBox->addItem("Mirror");
 //    sceneComboBox->addItem("Glass Ball");
-    sceneComboBox->addItem("Triangle&Glass");
+    sceneComboBox->addItem("Glass");
     sceneComboBox->addItem("Smoke");
     sceneComboBox->addItem("Mitsuba");
     sceneComboBox->addItem("Zoom");
@@ -78,6 +78,9 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     sceneComboBox->setMaximumWidth(maxWidth);
     methodComboBox->setMaximumWidth(maxWidth);
     samplesSpinBox->setMaximumWidth(maxWidth);
+    sceneComboBox->setMinimumWidth(maxWidth);
+    methodComboBox->setMinimumWidth(maxWidth);
+    samplesSpinBox->setMinimumWidth(maxWidth);
 
     // 在复选框和渲染按钮之间添加进度条
     progressBar = new QProgressBar(this);

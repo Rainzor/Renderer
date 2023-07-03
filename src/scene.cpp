@@ -328,49 +328,57 @@ void cornell_mitsuba(Scene &scene){
 
 void cornell_zoom(Scene &scene){
     //BACKGROUND
-    scene.background = make_shared<solid_color>(0,0,0);
+    scene.background = make_shared<solid_color>(0.1,0.1,0.1);
 
     //WORLD
     hittable_list objects;
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.5, 0.5, 0.5), 0.0);
+
     auto red = make_shared<lambertian>(color(.65, .05, .05));
     auto white = make_shared<lambertian>(color(.73, .73, .73));
     auto blue = make_shared<lambertian>(color(0.2, 0.4, 0.9));
     auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+    auto black = make_shared<lambertian>(color(0.1,0.1,0.1));
+    auto light = make_shared<diffuse_light>(color(12, 12, 12));
 
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
-    objects.add(make_shared<flip_face>(make_shared<xz_rect>(113, 443, 127, 432, 554, light)));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(153, 403, 197, 392, 554, light)));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    std::string obj_filename1 = "../data/Cow.obj";
-    shared_ptr<hittable> mesh1 = make_shared<mesh_triangle>(obj_filename1,white,150);
-    mesh1 = make_shared<rotate>(mesh1, 30,Axis::Y);
-    vecf3 translation_vector1(405, 155, 245);
-    mesh1 = make_shared<translate>(mesh1, translation_vector1);
-    objects.add(mesh1);
-    std::string obj_filename2 = "../data/Bunny.obj";
-    shared_ptr<hittable> mesh2 = make_shared<mesh_triangle>(obj_filename2,white,150);
-    mesh2 = make_shared<rotate>(mesh2, -170,Axis::Y);
-    vecf3 translation_vector2(170, 171, 260);
-    mesh2 = make_shared<translate>(mesh2, translation_vector2);
-    objects.add(mesh2);
+    std::string obj_filename1 = "../data/spot/spot.obj";
+    auto texture1 = make_shared<lambertian>(make_shared<image_texture>("../data/spot/spot_texture.png"));
 
-    //粗糙材质
+    shared_ptr<hittable> spot = make_shared<mesh_triangle>(obj_filename1,texture1,150);
+    spot = make_shared<rotate>(spot, 30,Axis::Y);
+    vecf3 translation_vector1(405, 155, 270);
+    spot = make_shared<translate>(spot, translation_vector1);
+    objects.add(spot);
+    std::string obj_filename2 = "../data/stanford_bunny/bunny.obj";
+    auto texture2 = make_shared<lambertian>(make_shared<image_texture>("../data/stanford_bunny/bunny.jpg"));
+    shared_ptr<hittable> bunny = make_shared<mesh_triangle>(obj_filename2,texture2,1200);
+    bunny = make_shared<rotate>(bunny, -180,Axis::Y);
+    vecf3 translation_vector2(170, 171, 255);
+    bunny = make_shared<translate>(bunny, translation_vector2);
+    objects.add(bunny);
+
+    //底座
     shared_ptr<hittable> box1 = make_shared<box>(pointf3(-100, 0, -128), pointf3(90, 30, 128), white);
-    box1 = make_shared<translate>(box1, vecf3(415, 0, 270));
+//    shared_ptr<hittable> box1_cover = make_shared<box>(pointf3(-100, 0, -128), pointf3(90, 28, 128), black);
+//    std::vector<shared_ptr<hittable>> box1s;
+//    shared_ptr<hittable> box1 = make_shared<hittable_list>(box1s);
+    box1 = make_shared<translate>(box1, vecf3(415, 0, 285));
     objects.add(box1);
-    shared_ptr<hittable> box2 = make_shared<box>(pointf3(-125, 0, -95), pointf3(125, 50, 95), white);
-    box2 = make_shared<translate>(box2, vecf3(170, 0, 260));
+    shared_ptr<hittable> box2 = make_shared<box>(pointf3(-125, 0, -95), pointf3(125, 58, 95), white);
+    box2 = make_shared<translate>(box2, vecf3(170, 0, 250));
     objects.add(box2);
     scene.world = objects;
 
-
     //LIGHTS
     scene.lights = make_shared<hittable_list>();
-    scene.lights->add(make_shared<xz_rect>(113, 443, 127, 432, 554, shared_ptr<material>()));
+    scene.lights->add(make_shared<xz_rect>(153, 403, 197, 392, 554, shared_ptr<material>()));
 
     //CAMERA
     double aspect_ratio = 1.0;
@@ -475,45 +483,50 @@ void test_scene(Scene & scene){
 
     //WORLD
     hittable_list objects;
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+
     auto red = make_shared<lambertian>(color(.65, .05, .05));
     auto white = make_shared<lambertian>(color(.73, .73, .73));
     auto blue = make_shared<lambertian>(color(0.2, 0.4, 0.9));
     auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+    auto light = make_shared<diffuse_light>(color(12, 12, 12));
 
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
-    objects.add(make_shared<flip_face>(make_shared<xz_rect>(113, 443, 127, 432, 554, light)));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(153, 403, 197, 392, 554, light)));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    std::string obj_filename1 = "../data/Cow.obj";
-    shared_ptr<hittable> mesh1 = make_shared<mesh_triangle>(obj_filename1,white,150);
-    mesh1 = make_shared<rotate>(mesh1, 30,Axis::Y);
-    vecf3 translation_vector1(405, 155, 245);
-    mesh1 = make_shared<translate>(mesh1, translation_vector1);
-    objects.add(mesh1);
-    std::string obj_filename2 = "../data/Bunny.obj";
-    shared_ptr<hittable> mesh2 = make_shared<mesh_triangle>(obj_filename2,white,150);
-    mesh2 = make_shared<rotate>(mesh2, -170,Axis::Y);
-    vecf3 translation_vector2(170, 171, 260);
-    mesh2 = make_shared<translate>(mesh2, translation_vector2);
-    objects.add(mesh2);
+    std::string obj_filename1 = "../data/spot/spot.obj";
+    auto texture1 = make_shared<lambertian>(make_shared<image_texture>("../data/spot/spot_texture.png"));
 
-    //粗糙材质
-    shared_ptr<hittable> box1 = make_shared<box>(pointf3(-80, 0, -128), pointf3(80, 30, 128), white);
-    box1 = make_shared<translate>(box1, vecf3(405, 0, 245));
+    shared_ptr<hittable> spot = make_shared<mesh_triangle>(obj_filename1,texture1,150);
+    spot = make_shared<rotate>(spot, 30,Axis::Y);
+    vecf3 translation_vector1(405, 155, 270);
+    spot = make_shared<translate>(spot, translation_vector1);
+    objects.add(spot);
+    std::string obj_filename2 = "../data/stanford_bunny/bunny.obj";
+    auto texture2 = make_shared<lambertian>(make_shared<image_texture>("../data/stanford_bunny/bunny.jpg"));
+    shared_ptr<hittable> bunny = make_shared<mesh_triangle>(obj_filename2,texture2,1200);
+    bunny = make_shared<rotate>(bunny, -180,Axis::Y);
+    vecf3 translation_vector2(170, 171, 255);
+    bunny = make_shared<translate>(bunny, translation_vector2);
+    objects.add(bunny);
+
+    //底座
+    shared_ptr<hittable> box1 = make_shared<box>(pointf3(-100, 0, -128), pointf3(90, 30, 128), white);
+    box1 = make_shared<translate>(box1, vecf3(415, 0, 285));
     objects.add(box1);
-    shared_ptr<hittable> box2 = make_shared<box>(pointf3(-125, 0, -95), pointf3(125, 50, 95), white);
-    box2 = make_shared<translate>(box2, vecf3(170, 0, 260));
+    shared_ptr<hittable> box2 = make_shared<box>(pointf3(-125, 0, -95), pointf3(125, 58, 95), aluminum);
+    box2 = make_shared<translate>(box2, vecf3(170, 0, 250));
     objects.add(box2);
     scene.world = objects;
 
 
     //LIGHTS
     scene.lights = make_shared<hittable_list>();
-    scene.lights->add(make_shared<xz_rect>(113, 443, 127, 432, 554, shared_ptr<material>()));
+    scene.lights->add(make_shared<xz_rect>(153, 403, 197, 392, 554, shared_ptr<material>()));
 
     //CAMERA
     double aspect_ratio = 1.0;

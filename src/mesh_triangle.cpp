@@ -12,14 +12,16 @@ mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m
     model.parseOBJ(filename.c_str());
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end_time - start_time;
-    if (elapsed_seconds.count() > 1.0)
+    if (elapsed_seconds.count() > 0.75)
         std::cout << "Loading " << filename << " takes " << elapsed_seconds.count() << " seconds" << std::endl;
     std::vector<pointf3> vertices;
     std::vector<float> vertices_f;
 //    std::vector<texf2> texCoords;
-//    std::vector<int> vertInds;
 //    std::vector<int> stInds;
-//    model.getVertexIndices(vertInds);
+
+    std::vector<int> vertInds;
+    model.getVertexIndices(vertInds);
+
      std::vector<float> triangle_vertices_f;
      std::vector<float> triangle_texCoord_f;
     model.getVertexVals(vertices_f);
@@ -27,6 +29,7 @@ mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m
     for (int i = 0; i < vertices_f.size(); i += 3) {
         vertices.emplace_back(vertices_f[i] * scale, vertices_f[i + 1] * scale, vertices_f[i + 2] * scale);
     }
+//    Init(vertices,vertInds,m);
     this->aabb_min = vertices[0];
     this->aabb_max = vertices[0];
     for (auto vertice : vertices) {
@@ -41,7 +44,8 @@ mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m
     aabb_min = aabb_min - mean_point;
     aabb_max = aabb_max - mean_point;
     num = model.getNumTriangles();
-
+    model.getTriangleVertices(triangle_vertices_f);
+    model.getTriangleTexCoords(triangle_texCoord_f);
     if(!model.is_texture){
         for(int i=0;i<num;i++){
             std::vector<pointf3> triangle_vertices(3);
@@ -73,7 +77,7 @@ mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m
     bvh = make_shared<bvh_node>(triangles,0,1);
     end_time = std::chrono::high_resolution_clock::now();
     elapsed_seconds = end_time - start_time;
-    if(elapsed_seconds.count()>1.0)
+    if(elapsed_seconds.count()>0.75)
         std::cout<<"Building BVH takes "<<elapsed_seconds.count()<<" seconds"<<std::endl;
     mat_ptr = m;
 }
@@ -112,7 +116,7 @@ void mesh_triangle::Init(const std::vector<pointf3> &vertices, const std::vector
 
 
 bool mesh_triangle::hit(const ray &r, double t_min, double t_max, hit_record &rec) const {
-    return triangles.hit(r, t_min, t_max, rec);
+    return bvh->hit(r, t_min, t_max, rec);
 }
 
 bool mesh_triangle::bounding_box(double time0, double time1, aabb &output_box) const {

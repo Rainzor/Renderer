@@ -6,7 +6,7 @@ int main(){
     cornell_box(scene);
     RenderEngine rayTracer(scene);
     int spp = 8;
-    SampleMethod sm = SampleMethod::Mixture;
-    rayTracer.render(spp, sm, "../output/img.png", true);
+    SampleMethod sm = SampleMethod::MIS;
+    rayTracer.render(spp, sm, img_name, true);
     return 0;
 }

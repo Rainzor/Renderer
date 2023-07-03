@@ -8,13 +8,12 @@ mesh_triangle::mesh_triangle(const std::vector<pointf3> &vertices, const std::ve
 }
 mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m,int scale){
     ModelImporter model;
-    std::cout<<"OBJ Loading....."<<std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
     model.parseOBJ(filename.c_str());
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end_time - start_time;
-    std::cout<<"OBJ Loading Time Cost: "<<elapsed_seconds.count()<<"s"<<std::endl;
-
+    if(elapsed_seconds.count()>1.0)
+        std::cout<<"Loading "<<filename<<" takes "<<elapsed_seconds.count()<<" seconds"<<std::endl;
     std::vector<pointf3> vertices;
     std::vector<float> vertices_f;
     std::vector<int> vertInds;
@@ -90,12 +89,12 @@ void mesh_triangle::Init(const std::vector<pointf3> &vertices, const std::vector
         pointf3 c = vertices[faces[i + 2]]-mean_point;
         triangles.add(make_shared<triangle>(a, b, c, m));
     }
-    std::cout<<"BVH building....."<<std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
     bvh = make_shared<bvh_node>(triangles,0,1);
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end_time - start_time;
-    std::cout<<"BVH Building Time Cost: "<<elapsed_seconds.count()<<"s"<<std::endl;
+    if(elapsed_seconds.count()>1.0)
+        std::cout<<"Building BVH takes "<<elapsed_seconds.count()<<" seconds"<<std::endl;
     mat_ptr = m;
 }
 

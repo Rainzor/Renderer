@@ -64,8 +64,8 @@ bvh_node::bvh_node(
         }
     } else {//如果有多个物体，将物体按照axis轴排序，然后取中间的物体作为分割点
 
+        //O(n)
         int mid = getMidNumber(src_objects, start, end, start + object_span / 2, axis);
-
 //        std::sort(src_objects.begin() + start, src_objects.begin() + end, comparator);//时间复杂度为O(nlogn)
 //        auto mid = start + object_span / 2;//中位数
         left = make_shared<bvh_node>(src_objects, start, mid, time0, time1);//将排序好的Objs再次进行递归

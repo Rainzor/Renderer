@@ -138,30 +138,30 @@ void ModelImporter::parseOBJ(const char *filePath) {
                 vertInds.push_back(vertRef/3);
                 if(isTexture){
                     getline(oneCornerSS, t, '/');
-//                    if(t.empty()) {
-//                        tcRef = stoi(v);
-//                    } else{
-//                        tcRef = stoi(t);
-//                    }
-//                    tcRef = tcRef ?  (tcRef - 1) * 2 : (stVals.size() + tcRef * 2);
-//                    textureCoords.push_back(stVals[tcRef]); // build vector of texture coords
-//                    textureCoords.push_back(stVals[tcRef + 1]);
-//                    stInds.push_back(tcRef/2);
+                    if(t.empty()) {
+                        tcRef = stoi(v);
+                    } else{
+                        tcRef = stoi(t);
+                    }
+                    tcRef = tcRef > 0 ?  (tcRef - 1) * 2 : (stVals.size() + tcRef * 2);
+                    textureCoords.push_back(stVals[tcRef]); // build vector of texture coords
+                    textureCoords.push_back(stVals[tcRef + 1]);
+                    stInds.push_back(tcRef/2);
                 }
 
                 if(isNormal){
                     getline(oneCornerSS, n, '/');
-//                    if(n.empty()) {
-//                        normRef = stoi(v);
-//                    }
-//                    else{
-//                        normRef = stoi(n);
-//                    }
-//                    normRef = normRef ? (normRef - 1) * 3 : (normVals.size() + normRef * 3);
-//                    normals.push_back(normVals[normRef]); //… and normals
-//                    normals.push_back(normVals[normRef + 1]);
-//                    normals.push_back(normVals[normRef + 2]);
-//                    normInds.push_back(normRef/3);
+                    if(n.empty()) {
+                        normRef = stoi(v);
+                    }
+                    else{
+                        normRef = stoi(n);
+                    }
+                    normRef = normRef>0 ? (normRef - 1) * 3 : (normVals.size() + normRef * 3);
+                    normals.push_back(normVals[normRef]); //… and normals
+                    normals.push_back(normVals[normRef + 1]);
+                    normals.push_back(normVals[normRef + 2]);
+                    normInds.push_back(normRef/3);
                 }
             }
 

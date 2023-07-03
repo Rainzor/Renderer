@@ -43,8 +43,9 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     sceneComboBox->addItem("Mirror");
 //    sceneComboBox->addItem("Glass Ball");
     sceneComboBox->addItem("Triangle&Glass");
-    sceneComboBox->addItem("David&Bunny");
     sceneComboBox->addItem("Smoke");
+    sceneComboBox->addItem("Mitsuba");
+    sceneComboBox->addItem("Zoom");
     sceneLayout->addWidget(sceneLabel);
     sceneLayout->addWidget(sceneComboBox);
 
@@ -130,10 +131,13 @@ void MainWindow::startRendering() {
             sceneName = "Triangle and Glass Ball";
             break;
         case 3:
-            sceneName = "David and Bunny";
+            sceneName = "Clouds";
             break;
         case 4:
-            sceneName = "Clouds";
+            sceneName = "Mitsuba";
+            break;
+        case 5:
+            sceneName = "Zoom";
             break;
         default:
             sceneName = "Cornell Box";
@@ -194,10 +198,13 @@ void MainWindow::renderInBackground(const std::string &filename) {
             cornell_triangle_glass(scene);
             break;
         case 3:
-            cornell_mesh_objects(scene);
+            cornell_smoke(scene);
             break;
         case 4:
-            cornell_smoke(scene);
+            cornell_mitsuba(scene);
+            break;
+        case 5:
+            cornell_zoom(scene);
             break;
         default:
             cornell_box(scene);

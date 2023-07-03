@@ -32,10 +32,21 @@ The Render is accelerated by **OpenMP**. Make sure your compiler support it.
 
 ## Result
 
+### Cornell Box
+
 <div align="center">
-    <img src="./output/default.png" width="400" title="Cornell Box">
+    <img src="./output/default.png" width="300" title="Cornell Box">
     <div style="">
-        Figure 1: Cornell Box
+        Figure : Cornell Box
+    </div>
+</div>
+
+### Bunny and Spot Cow
+
+<div align="center">
+    <img src="./output/zoom.png" width="300" title="Bunny">
+    <div style="">
+        Figure : Bunny and Spot
     </div>
 </div>
 

@@ -50,7 +50,6 @@ class hittable {
     virtual void getMaterial(shared_ptr<material>& mptr) const{
         return;
     }
-
 };
 
 

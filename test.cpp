@@ -1,5 +1,3 @@
-//
-
 #include "RenderEngine.h"
 #include <chrono>
 #include <fstream>
@@ -49,3 +47,58 @@ int main(){
     outfile.close();
     return 0;
 }
+
+////
+//#include <iostream>
+//#include <fstream>
+//#include <string>
+//#include <sstream>
+//
+//int main() {
+//    std::string inputFileName = "../data/mitsuba.obj";
+//    std::string outputFileName1 = "../data/mitsuba1.obj";
+//    std::string outputFileName2 = "../data/mitsuba2.obj";
+//
+//    std::ifstream inputFile(inputFileName);
+//    std::ofstream outputFile1(outputFileName1);
+//    std::ofstream outputFile2(outputFileName2);
+//
+//    if (!inputFile.is_open()) {
+//        std::cerr << "Failed to open input file: " << inputFileName << std::endl;
+//        return 1;
+//    }
+//
+//    if (!outputFile1.is_open()) {
+//        std::cerr << "Failed to open output file: " << outputFileName1 << std::endl;
+//        return 1;
+//    }
+//
+//    if (!outputFile2.is_open()) {
+//        std::cerr << "Failed to open output file: " << outputFileName2 << std::endl;
+//        return 1;
+//    }
+//
+//    std::string line;
+//    bool firstObject = true;
+//
+//    while (std::getline(inputFile, line)) {
+//        if (line.compare(0, 8, "# object") == 0) {
+//            firstObject = !firstObject;
+//            continue;
+//        }
+//
+//        if (firstObject) {
+//            outputFile1 << line << std::endl;
+//        } else {
+//            outputFile2 << line << std::endl;
+//        }
+//    }
+//
+//    inputFile.close();
+//    outputFile1.close();
+//    outputFile2.close();
+//
+//    std::cout << "Successfully split the input file into " << outputFileName1 << " and " << outputFileName2 << std::endl;
+//
+//    return 0;
+//}

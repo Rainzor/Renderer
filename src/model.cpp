@@ -78,11 +78,20 @@ void ModelImporter::parseOBJ(const char *filePath) {
     string content;
     ifstream fileStream(filePath, ios::in);
     string line = "";
-
+    if (!fileStream.is_open()) {
+        cerr << "Error opening file: " << filePath << endl;
+        exit(1);
+    }
     int iNum = 0;//调试
     while (!fileStream.eof()) {
 
         getline(fileStream, line);
+
+        // 跳过空行和注释行（以 '#' 开头的行）
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
+
         if (line.compare(0, 2, "v ") == 0) { // vertex position ("v" case)
 
             stringstream ss(line.erase(0, 1));
@@ -119,96 +128,46 @@ void ModelImporter::parseOBJ(const char *filePath) {
             for (int i = 0; i < 3; i++) {
                 getline(ss, oneCorner, ' '); // extract triangle face references
                 stringstream oneCornerSS(oneCorner);
+                int vertRef, tcRef, normRef;
                 getline(oneCornerSS, v, '/');
-                int vertRef = (stoi(v) - 1) * 3; // "stoi" converts string to integer
+                vertRef = stoi(v) ;
+                vertRef =vertRef>0? (vertRef - 1) * 3 : (vertVals.size() + vertRef * 3); // "stoi" converts string to integer
                 triangleVerts.push_back(vertVals[vertRef]); // build vector of vertices
                 triangleVerts.push_back(vertVals[vertRef + 1]);
                 triangleVerts.push_back(vertVals[vertRef + 2]);
                 vertInds.push_back(vertRef/3);
                 if(isTexture){
                     getline(oneCornerSS, t, '/');
-                    int tcRef = (stoi(t) - 1) * 2;
-                    textureCoords.push_back(stVals[tcRef]); // build vector of texture coords
-                    textureCoords.push_back(stVals[tcRef + 1]);
-                    stInds.push_back(tcRef/2);
+//                    if(t.empty()) {
+//                        tcRef = stoi(v);
+//                    } else{
+//                        tcRef = stoi(t);
+//                    }
+//                    tcRef = tcRef ?  (tcRef - 1) * 2 : (stVals.size() + tcRef * 2);
+//                    textureCoords.push_back(stVals[tcRef]); // build vector of texture coords
+//                    textureCoords.push_back(stVals[tcRef + 1]);
+//                    stInds.push_back(tcRef/2);
                 }
 
                 if(isNormal){
                     getline(oneCornerSS, n, '/');
-                    int normRef = (stoi(n) - 1) * 3;
-                    normals.push_back(normVals[normRef]); //… and normals
-                    normals.push_back(normVals[normRef + 1]);
-                    normals.push_back(normVals[normRef + 2]);
-                    normInds.push_back(normRef/3);
+//                    if(n.empty()) {
+//                        normRef = stoi(v);
+//                    }
+//                    else{
+//                        normRef = stoi(n);
+//                    }
+//                    normRef = normRef ? (normRef - 1) * 3 : (normVals.size() + normRef * 3);
+//                    normals.push_back(normVals[normRef]); //… and normals
+//                    normals.push_back(normVals[normRef + 1]);
+//                    normals.push_back(normVals[normRef + 2]);
+//                    normInds.push_back(normRef/3);
                 }
             }
 
         }
     }
 }
-
-//void ModelImporter::parseOBJ(const char *filePath) {
-//    float x, y, z;
-//    string content;
-//    ifstream fileStream(filePath, ios::in);
-//    string line = "";
-//
-//    while (std::getline(fileStream, line)) {
-//        std::istringstream ss(line);
-//
-//        std::string prefix;
-//        ss >> prefix;
-//
-//        if (prefix == "v ") { // vertex position ("v" case)
-//            ss >> x >> y >> z; // extract the vertex position values
-//
-//            vertVals.push_back(x);
-//            vertVals.push_back(y);
-//            vertVals.push_back(z);
-//        } else if (prefix == "vt") { // texture coordinates ("vt" case)
-//            ss >> x >> y; // extract texture coordinate values
-//
-//            stVals.push_back(x);
-//            stVals.push_back(y);
-//        } else if (prefix == "vn") { // vertex normals ("vn" case)
-//            ss >> x >> y >> z; // extract the normal vector values
-//
-//            normVals.push_back(x);
-//            normVals.push_back(y);
-//            normVals.push_back(z);
-//        } else if (prefix == "f ") {
-//            std::string oneCorner, v, t, n;
-//
-//            for (int i = 0; i < 3; i++) {
-//                ss >> oneCorner;
-//                std::istringstream oneCornerSS(oneCorner);
-//
-//                std::getline(oneCornerSS, v, '/');
-//                int vertRef = (std::stoi(v) - 1) * 3; // "stoi" converts string to integer
-//                triangleVerts.push_back(vertVals[vertRef]); // build vector of vertices
-//                triangleVerts.push_back(vertVals[vertRef + 1]);
-//                triangleVerts.push_back(vertVals[vertRef + 2]);
-//
-//                if (std::getline(oneCornerSS, t, '/') && !stVals.empty()) {
-//                    if (!t.empty()) {
-//                        int tcRef = (std::stoi(t) - 1) * 2;
-//                        textureCoords.push_back(stVals[tcRef]); // build vector of texture coords
-//                        textureCoords.push_back(stVals[tcRef + 1]);
-//                    }
-//                }
-//
-//                if (std::getline(oneCornerSS, n, '/') && !normVals.empty()) {
-//                    if (!n.empty()) {
-//                        int normRef = (std::stoi(n) - 1) * 3;
-//                        normals.push_back(normVals[normRef]); // build vector of normals
-//                        normals.push_back(normVals[normRef + 1]);
-//                        normals.push_back(normVals[normRef + 2]);
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 
 int ModelImporter::getNumVertices() { return (vertVals.size() / 3); } // accessors  // 先注释，为了调试，等调试结束再解除注释
 

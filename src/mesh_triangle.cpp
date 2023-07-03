@@ -2,13 +2,19 @@
 // Created by Runze on 01/07/2023.
 //
 #include "mesh_triangle.h"
-
+#include <chrono>
 mesh_triangle::mesh_triangle(const std::vector<pointf3> &vertices, const std::vector<int>& faces,shared_ptr<material> m) {
     Init(vertices,faces,m);
 }
 mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m,int scale){
     ModelImporter model;
+    std::cout<<"OBJ Loading....."<<std::endl;
+    auto start_time = std::chrono::high_resolution_clock::now();
     model.parseOBJ(filename.c_str());
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end_time - start_time;
+    std::cout<<"OBJ Loading Time Cost: "<<elapsed_seconds.count()<<"s"<<std::endl;
+
     std::vector<pointf3> vertices;
     std::vector<float> vertices_f;
     std::vector<int> vertInds;
@@ -16,7 +22,7 @@ mesh_triangle::mesh_triangle(const std::string& filename, shared_ptr<material> m
     model.getVertexIndices(vertInds);
     model.getVertexVals(vertices_f);
     for (int i = 0; i < vertices_f.size(); i += 3) {
-            vertices.push_back(pointf3(vertices_f[i]*scale, vertices_f[i + 1]*scale, vertices_f[i + 2]*scale));
+            vertices.emplace_back(vertices_f[i]*scale, vertices_f[i + 1]*scale, vertices_f[i + 2]*scale);
     }
     Init(vertices, vertInds, m);
 
@@ -77,15 +83,19 @@ void mesh_triangle::Init(const std::vector<pointf3> &vertices, const std::vector
 
     aabb_min = aabb_min - mean_point;
     aabb_max = aabb_max - mean_point;
-
+    num = faces.size() / 3;
     for (int i = 0; i < faces.size(); i += 3) {
         pointf3 a = vertices[faces[i]]-mean_point;
         pointf3 b = vertices[faces[i + 1]]-mean_point;
         pointf3 c = vertices[faces[i + 2]]-mean_point;
         triangles.add(make_shared<triangle>(a, b, c, m));
     }
+    std::cout<<"BVH building....."<<std::endl;
+    auto start_time = std::chrono::high_resolution_clock::now();
     bvh = make_shared<bvh_node>(triangles,0,1);
-    num = faces.size() / 3;
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end_time - start_time;
+    std::cout<<"BVH Building Time Cost: "<<elapsed_seconds.count()<<"s"<<std::endl;
     mat_ptr = m;
 }
 

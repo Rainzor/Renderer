@@ -5,7 +5,7 @@ int main(){
     Scene scene;
     test_scene(scene);
     RenderEngine rayTracer(scene);
-    int spp = 10;
+    int spp = 16;
     SampleMethod sm = SampleMethod::Mixture;
     rayTracer.render(spp, sm, "../output/img.png", true);
     return 0;

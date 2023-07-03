@@ -69,6 +69,16 @@ void MainWindow::createRendererUI(QVBoxLayout *leftLayout) {
     samplesLayout->addWidget(samplesLabel);
     samplesLayout->addWidget(samplesSpinBox);
 
+    // 获取三个 combobox 中最大的宽度
+    int maxWidth = std::max({sceneComboBox->sizeHint().width(),
+                             methodComboBox->sizeHint().width(),
+                             samplesSpinBox->sizeHint().width()});
+
+    // 设置每个 combobox 的最大宽度
+    sceneComboBox->setMaximumWidth(maxWidth);
+    methodComboBox->setMaximumWidth(maxWidth);
+    samplesSpinBox->setMaximumWidth(maxWidth);
+
     // 在复选框和渲染按钮之间添加进度条
     progressBar = new QProgressBar(this);
     progressBar->setRange(0, 100); // 设置进度条的范围为0到100

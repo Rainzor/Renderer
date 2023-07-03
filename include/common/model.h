@@ -59,5 +59,7 @@ public:
     void getTriangleVertices(std::vector<float>& tri_v);
     void getTriangleTexCoords(std::vector<float>& tri_st);
     void getTriangleNormals(std::vector<float>& tri_norm);
-
+public:
+    bool is_texture;
+    bool is_normal;
 };

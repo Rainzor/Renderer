@@ -52,13 +52,25 @@ triangle::triangle(const std::vector<pointf3> &vertexes, shared_ptr<material> m)
         std::cerr << "triangle: vertexes.size() != 3" << std::endl;
         exit(1);
     } else {
-        triangle(vertexes[0], vertexes[1], vertexes[2], m);
+        v0 = vertexes[0];
+        v1 = vertexes[1];
+        v2 = vertexes[2];
+        vn1 = unit_vector(cross(v1 - v0, v2 - v0));
+        vn2 = vn1;
+        vn3 = vn1;
+
+        vt0 = texf2(0, 0);
+        vt1 = texf2(0, 1);
+        vt2 = texf2(1, 0);
     }
 }
 
 triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2> &textures, shared_ptr<material> m) {
-    if(textures.empty())
-        triangle(vertexes, m);
+    if (textures.empty()){
+        std::cerr<<"triangle: textures is empty"<<std::endl;
+        exit(1);
+    }
+
     else {
         v0 = vertexes[0];
         v1 = vertexes[1];
@@ -74,10 +86,11 @@ triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2
         vn3 = vn1;
     }
 }
-
 triangle::triangle(const std::vector<pointf3> &vertexes, const std::vector<texf2> &textures, const std::vector<vecf3> &normals, shared_ptr<material> m) {
-    if(normals.empty())
-        triangle(vertexes, textures, m);
+    if (normals.empty()) {
+        std::cerr << "triangle: normals is empty" << std::endl;
+        exit(1);
+    }
     else {
         v0 = vertexes[0];
         v1 = vertexes[1];

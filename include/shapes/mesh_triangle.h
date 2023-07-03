@@ -9,6 +9,7 @@
 #include "hittable_list.h"
 #include "model.h"
 #include "bvh.h"
+#include <map>
 class mesh_triangle: public hittable{
 public:
     mesh_triangle(){}

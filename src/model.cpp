@@ -123,8 +123,8 @@ void ModelImporter::parseOBJ(const char *filePath) {
 
             string oneCorner, v, t, n;
             stringstream ss(line.erase(0, 2));
-            bool isNormal = !normVals.empty();
-            bool isTexture = !stVals.empty();
+            is_normal = !normVals.empty();
+            is_texture = !stVals.empty();
             for (int i = 0; i < 3; i++) {
                 getline(ss, oneCorner, ' '); // extract triangle face references
                 stringstream oneCornerSS(oneCorner);
@@ -136,7 +136,7 @@ void ModelImporter::parseOBJ(const char *filePath) {
                 triangleVerts.push_back(vertVals[vertRef + 1]);
                 triangleVerts.push_back(vertVals[vertRef + 2]);
                 vertInds.push_back(vertRef/3);
-                if(isTexture){
+                if(is_texture){
                     getline(oneCornerSS, t, '/');
                     if(t.empty()) {
                         tcRef = stoi(v);
@@ -149,7 +149,7 @@ void ModelImporter::parseOBJ(const char *filePath) {
                     stInds.push_back(tcRef/2);
                 }
 
-                if(isNormal){
+                if(is_normal){
                     getline(oneCornerSS, n, '/');
                     if(n.empty()) {
                         normRef = stoi(v);

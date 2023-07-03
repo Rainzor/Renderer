@@ -3,7 +3,7 @@
 int main(){
    std::string img_name = "../output/img.png";
     Scene scene;
-    cornell_zoom(scene);
+    cornell_box(scene);
     RenderEngine rayTracer(scene);
     int spp = 8;
     SampleMethod sm = SampleMethod::Mixture;

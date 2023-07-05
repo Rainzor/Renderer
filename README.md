@@ -12,7 +12,7 @@ cmake --build build # 执行构建
 ````
 ### Qt
 
-The UI is based on Qt 5. Before use [CMakeLists.txt](CMakeLists.txt), please change Qt's path here
+The UI is based on Qt 5. Before using [CMakeLists.txt](CMakeLists.txt), please changing Qt's path here
 
 ```` cmake
 #CMakeLists.txt
@@ -53,8 +53,8 @@ The Render is accelerated by **OpenMP**. Make sure your compiler support it.
 ## Supported Features
 
 - [x] Object:  sphere, rectangle, triangle and triangle-mesh 
-- [x] Operations:  translation and rotation.
-- [x] Materials: diffuse reflection, specular reflection, refraction, participating media and light source
+- [x] Operation:  translation and rotation.
+- [x] Material: diffuse reflection, specular reflection, refraction, participating media and light source
 - [x] Texture: solid color, noise texture and image texture mapping
 - [x] Advanced Sampling: BRDF sampling, light sampling, NEE, multiple importance sampling
 - [ ] Acceleration:

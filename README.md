@@ -50,7 +50,24 @@ The Render is accelerated by **OpenMP**. Make sure your compiler support it.
     </div>
 </div>
 
+## Supported Features
+
+- [x] Object:  sphere, rectangle, triangle and triangle-mesh 
+- [x] Operations:  translation and rotation.
+- [x] Materials: diffuse reflection, specular reflection, refraction, participating media and light source
+- [x] Texture: solid color, noise texture and image texture mapping
+- [x] Advanced Sampling: BRDF sampling, light sampling, NEE, multiple importance sampling
+- [ ] Acceleration:
+  - [x] BVH
+  - [x] CPU Parallel: OpenMP
+  - [ ] GPU Parallel: CUDA
+- [ ] Cook-Torrance BRDF
+- [ ] Ray-Marching in volume rendering
+- [ ] Load scene in json format
+
+
 ## Reference
 
-- [raytracing in one week](https://raytracing.github.io/)
+- [Ray tracing in one week](https://raytracing.github.io/)
 - [PBRT3](https://pbr-book.org/3ed-2018/contents)
+- [Scratchapixel 3.0](https://www.scratchapixel.com/index.html)

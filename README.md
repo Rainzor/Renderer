@@ -12,7 +12,7 @@ cmake --build build # 执行构建
 ````
 ### Qt
 
-The UI is based on Qt 5. Before using [CMakeLists.txt](CMakeLists.txt), please changing Qt's path here
+The UI is based on Qt 5. Before using [CMakeLists.txt](CMakeLists.txt), please change Qt's path here
 
 ```` cmake
 #CMakeLists.txt
